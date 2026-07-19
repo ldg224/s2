@@ -61,6 +61,12 @@
             50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--brand-solid); }
             100% { transform: scale(0.9); opacity: 0.6; }
         }
+        
+        /* Fixed animation for a flawless loop */
+        @keyframes stripeSlide {
+            0% { background-position: 0 0, center center; }
+            100% { background-position: 80px 80px, center center; }
+        }
 
         .app-container {
             max-width: 900px;
@@ -181,6 +187,26 @@
             transition: transform 0.2s ease, background 0.2s ease;
             border-left: 4px solid transparent;
         }
+        
+        /* Fixed, ultra-thin sparse scrolling stripes for the leaderboard */
+        .leaderboard-row::before {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; top: 0; bottom: 0;
+            background-image: linear-gradient(
+                -45deg, 
+                transparent 49%, 
+                rgba(255, 255, 255, 0.007) 20%, 
+                rgba(255,255,255,0.04) 21%, 
+                transparent 51%
+            );
+            background-size: 80px 80px;
+            z-index: -1;
+            pointer-events: none;
+            animation: stripeSlide 15s linear infinite;
+            border-radius: 10px;
+        }
+
         .leaderboard-row:hover {
             transform: translateX(4px);
             background: rgba(255, 255, 255, 0.05) !important;
@@ -204,12 +230,29 @@
         .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); box-shadow: none; }
 
         .leaderboard-row > * { position: relative; z-index: 1; }
-        .leaderboard-row .sec-mini { width: 18px; height: 18px; object-fit: contain; opacity: 0.06; transform: rotate(-18deg); margin-left: 8px; }
+        .leaderboard-row .sec-mini {
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            opacity: 0.18;
+            margin-left: 8px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px;
+        }
+
+        .leaderboard-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 92px;
+            justify-content: flex-end;
+        }
 
         /* Podium accent borders */
-        .leaderboard-row.top-1 { border-left-color: #e4b1097c; } /* Gold */
-        .leaderboard-row.top-2 { border-left-color: #9ca3af7e; } /* Silver */
-        .leaderboard-row.top-3 { border-left-color: #cd80328f; } /* Bronze */
+        .leaderboard-row.top-1 { border-left-color: #d5d915; } /* Gold */
+        .leaderboard-row.top-2 { border-left-color: #9ca3af; } /* Silver */
+        .leaderboard-row.top-3 { border-left-color: #cd7f32; } /* Bronze */
 
         .schedule-section-heading {
             font-size: 1.25rem; font-weight: 800; letter-spacing: -0.25px;
@@ -240,18 +283,29 @@
             border-color: rgba(118, 211, 6, 0.25);
         }
         
-        /* Cleaned up static team colors background */
+        /* Fixed, ultra-thin sparse animated stripes for match blocks */
         .match-block::before {
             content: ''; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: linear-gradient(135deg, var(--h-color) 0%, transparent 45%, transparent 55%, var(--a-color) 100%);
-            opacity: 0.10;
+            background-image: 
+                linear-gradient(
+                    -45deg, 
+                    transparent 49%, 
+                    rgba(255,255,255,0.04) 49%, 
+                    rgba(255,255,255,0.04) 51%, 
+                    transparent 51%
+                ),
+                linear-gradient(135deg, var(--h-color) 0%, transparent 45%, transparent 55%, var(--a-color) 100%);
+            background-repeat: repeat, no-repeat;
+            background-size: 80px 80px, cover;
+            opacity: 0.12; /* Keep it subtle */
             z-index: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
+            animation: stripeSlide 15s linear infinite;
         }
         .match-block:hover::before {
-            opacity: 0.20;
+            opacity: 0.25;
         }
         .match-block::after {
             content: '';
@@ -659,17 +713,17 @@
 
                 // Movement Logic
                 let prevRank = history.previousRanks[team.code] || rankPos;
-                let movementHtml = `<span class="move-icon move-same">-</span>`;
-                if (prevRank > rankPos) {
-                    movementHtml = `<span class="move-icon move-up">▲</span>`;
-                } else if (prevRank < rankPos) {
-                    movementHtml = `<span class="move-icon move-down">▼</span>`;
+                let rankMovement = prevRank - rankPos;
+                let movementHtml = `<span class="move-icon move-same">─</span>`;
+                if (rankMovement > 0) {
+                    movementHtml = `<span class="move-icon move-up">▲${rankMovement}</span>`;
+                } else if (rankMovement < 0) {
+                    movementHtml = `<span class="move-icon move-down">▼${Math.abs(rankMovement)}</span>`;
                 }
 
                 return `
                     <div class="leaderboard-row ${topClass}" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
                         <div class="leaderboard-team">
-                            <div class="rank-movement">${movementHtml} <span class="rank-num">${team.rank}</span></div>
                             ${logoHtml}
                             ${secondaryLogoHtml}
                             <div>
@@ -677,7 +731,10 @@
                                 <div class="leaderboard-team-meta">${team.name}</div>
                             </div>
                         </div>
-                        <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
+                        <div class="leaderboard-score">
+                            <div class="rank-movement">${movementHtml}</div>
+                            <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
+                        </div>
                     </div>
                 `;
             }).join('');
