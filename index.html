@@ -62,11 +62,6 @@
             100% { transform: scale(0.9); opacity: 0.6; }
         }
 
-        @keyframes stripeSlide {
-            0% { background-position: 0 0, 0 0, 0 0, 0 0, center center, 0 0; }
-            100% { background-position: 280px 0, 240px 0, 180px 0, 320px 0, center center, 160px 0; }
-        }
-
         .app-container {
             max-width: 900px;
             margin: 0 auto;
@@ -147,7 +142,6 @@
             animation: livePulse 2s infinite ease-in-out;
         }
 
-        /* reduce main header logo size */
         .header-logo {
             width: 72px;
             height: auto;
@@ -171,59 +165,51 @@
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
         .dash-widget:nth-child(1) { animation-delay: 80ms; }
-        .dash-widget:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        }
 
         .dash-title {
             font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
             color: var(--text-muted); margin: 0 0 12px 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;
         }
 
-        .mini-ladder-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--glass-border); font-weight: 600; font-size: 0.95rem; }
-        .mini-ladder-row:last-child { border-bottom: none; }
-        .mini-rank { color: var(--text-muted); width: 24px; display: inline-block; font-weight: 700; }
-        .mini-pts { background: rgba(118, 211, 6, 0.1); color: var(--brand-solid); padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
-
         .leaderboard-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .leaderboard-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px; border-radius: 10px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.02); }
+        .leaderboard-row { 
+            display: flex; align-items: center; justify-content: space-between; gap: 14px; 
+            padding: 10px; border-radius: 10px; 
+            background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005)); 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+            position: relative; overflow: hidden;
+            transition: transform 0.2s ease, background 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+        .leaderboard-row:hover {
+            transform: translateX(4px);
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+        
         .leaderboard-row + .leaderboard-row { margin-top: 6px; }
-        .leaderboard-row:last-child { border-bottom: none; }
         .leaderboard-team { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        
+        /* Rank Movement Classes */
+        .rank-movement { display: flex; align-items: center; gap: 6px; min-width: 38px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
+        .move-icon { font-size: 0.7rem; width: 12px; text-align: center; }
+        .move-up { color: #34d399; }
+        .move-down { color: #ef4444; }
+        .move-same { color: #6b7280; }
+
         .leaderboard-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 10px; background: rgba(255,255,255,0.06); padding: 4px; }
         .leaderboard-team-name { font-size: 0.95rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
         .leaderboard-team-meta { color: var(--text-muted); font-size: 0.78rem; }
-        .leaderboard-pts { padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; min-width: 68px; text-align: center; }
+        .leaderboard-pts { padding: 4px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 800; min-width: 68px; text-align: center; }
         .leaderboard-pts.top4 { background: linear-gradient(90deg, rgba(118,211,6,0.12), rgba(118,211,6,0.06)); color: var(--brand-solid); box-shadow: 0 6px 18px rgba(118,211,6,0.06), inset 0 1px 0 rgba(255,255,255,0.06); }
         .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); box-shadow: none; }
 
-        /* subtle moving angled stripes on leaderboard rows */
-        .leaderboard-row::before {
-            content: '';
-            position: absolute;
-            left: 0; right: 0; top: 0; bottom: 0;
-            background-image: linear-gradient(135deg, rgba(255,255,255,0.08) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.08) 75%, transparent 75%, transparent 100%);
-            background-size: 120px 120px;
-            opacity: 0.14;
-            z-index: -1;
-            pointer-events: none;
-            animation: stripeSlide 14s linear infinite;
-            border-radius: 10px;
-        }
-
-        .leaderboard-row { position: relative; overflow: hidden; }
         .leaderboard-row > * { position: relative; z-index: 1; }
+        .leaderboard-row .sec-mini { width: 18px; height: 18px; object-fit: contain; opacity: 0.06; transform: rotate(-18deg); margin-left: 8px; }
 
-        /* tiny secondary watermark logo inside leaderboard rows */
-        .leaderboard-row .sec-mini {
-            width: 18px; height: 18px; object-fit: contain; opacity: 0.06; transform: rotate(-18deg); margin-left: 8px;
-        }
-
-        /* subtle accent for top 3 positions */
-        .leaderboard-row.top-1 { border: 1px solid rgba(143,255,6,0.12); box-shadow: 0 8px 28px rgba(118,211,6,0.04); }
-        .leaderboard-row.top-2 { border: 1px solid rgba(255,215,59,0.06); }
-        .leaderboard-row.top-3 { border: 1px solid rgba(96,165,250,0.06); }
+        /* Podium accent borders */
+        .leaderboard-row.top-1 { border-left-color: #e4b1097c; } /* Gold */
+        .leaderboard-row.top-2 { border-left-color: #9ca3af7e; } /* Silver */
+        .leaderboard-row.top-3 { border-left-color: #cd80328f; } /* Bronze */
 
         .schedule-section-heading {
             font-size: 1.25rem; font-weight: 800; letter-spacing: -0.25px;
@@ -237,7 +223,6 @@
         
         .timetable-list { display: flex; flex-direction: column; gap: 16px; }
 
-        /* The Match Card */
         .match-block {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -255,35 +240,15 @@
             border-color: rgba(118, 211, 6, 0.25);
         }
         
+        /* Cleaned up static team colors background */
         .match-block::before {
             content: ''; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image:
-                linear-gradient(135deg, rgba(255,255,255,0.04) 1px, transparent 1px),
-                linear-gradient(135deg, rgba(255,255,255,0.06) 2px, transparent 2px),
-                linear-gradient(135deg, rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(135deg, rgba(255,255,255,0.08) 2px, transparent 2px),
-                linear-gradient(135deg, var(--h-color) 0%, transparent 45%, transparent 55%, var(--a-color) 100%),
-                linear-gradient(135deg,
-                    transparent 0%, transparent 18%,
-                    rgba(255,255,255,0.08) 18%, rgba(255,255,255,0.08) 19%,
-                    transparent 19%, transparent 31%,
-                    rgba(255,255,255,0.08) 31%, rgba(255,255,255,0.08) 32%,
-                    transparent 32%, transparent 68%,
-                    rgba(255,255,255,0.08) 68%, rgba(255,255,255,0.08) 69%,
-                    transparent 69%, transparent 81%,
-                    rgba(255,255,255,0.08) 81%, rgba(255,255,255,0.08) 82%,
-                    transparent 82%, transparent 100%
-                );
-            background-repeat: repeat, repeat, repeat, repeat, no-repeat, no-repeat;
-            background-size: 180px 180px, 220px 220px, 120px 120px, 300px 300px, cover, cover;
-            background-position: 0 0, 0 0, 0 0, 0 0, center center, 0 0;
-            background-blend-mode: normal;
-            opacity: 0.14;
+            background-image: linear-gradient(135deg, var(--h-color) 0%, transparent 45%, transparent 55%, var(--a-color) 100%);
+            opacity: 0.10;
             z-index: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
-            animation: stripeSlide 18s linear infinite;
         }
         .match-block:hover::before {
             opacity: 0.20;
@@ -297,7 +262,6 @@
             pointer-events: none;
         }
 
-        /* === ROTATED SECONDARY LOGO WATERMARKS === */
         .bg-logo-wrapper {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -308,53 +272,27 @@
         .sec-logo-watermark {
             position: absolute;
             top: 50%;
-            height: 160%; /* Nicely scaled up to bleed outside the boundary boxes */
+            height: 160%;
             width: auto;
-            opacity: 0.035; /* Subtle watermark opacity */
+            opacity: 0.035;
             transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         
-        /* Home Side Logo (Angles inward at -45 degrees) */
-        .sec-logo-watermark.home-wm {
-            left: -12%;
-            transform: translateY(-50%) rotate(-45deg) scale(1.1);
-        }
-        
-        /* Away Side Logo (Angles inward at 45 degrees) */
-        .sec-logo-watermark.away-wm {
-            right: -12%;
-            transform: translateY(-50%) rotate(45deg) scale(1.1);
-        }
+        .sec-logo-watermark.home-wm { left: -12%; transform: translateY(-50%) rotate(-45deg) scale(1.1); }
+        .sec-logo-watermark.away-wm { right: -12%; transform: translateY(-50%) rotate(45deg) scale(1.1); }
+        .match-block:hover .sec-logo-watermark { opacity: 0.07; }
+        .match-block:hover .sec-logo-watermark.home-wm { transform: translateY(-50%) rotate(-40deg) scale(1.2); }
+        .match-block:hover .sec-logo-watermark.away-wm { transform: translateY(-50%) rotate(40deg) scale(1.2); }
 
-        /* Micro-interactions on Card Hover */
-        .match-block:hover .sec-logo-watermark {
-            opacity: 0.07; /* Pop opacity slightly on card hover */
-        }
-        .match-block:hover .sec-logo-watermark.home-wm {
-            transform: translateY(-50%) rotate(-40deg) scale(1.2); /* Soft rotation dynamic pulse */
-        }
-        .match-block:hover .sec-logo-watermark.away-wm {
-            transform: translateY(-50%) rotate(40deg) scale(1.2);
-        }
-
-        .match-content {
-            position: relative; z-index: 2; padding: 16px 22px;
-        }
-
+        .match-content { position: relative; z-index: 2; padding: 16px 22px; }
         .match-top-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 12px; }
         .match-meta { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); display: flex; gap: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .match-status { 
-            font-size: 0.7rem; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            padding: 3px 10px; 
-            border-radius: 20px; 
-            letter-spacing: 0.8px; 
-            background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid currentColor;
-            text-shadow: 0 0 2px currentColor;
-            box-shadow: 0 0 8px currentColor;
+            font-size: 0.7rem; font-weight: 800; text-transform: uppercase; 
+            padding: 3px 10px; border-radius: 20px; letter-spacing: 0.8px; 
+            background: rgba(0, 0, 0, 0.3); border: 1px solid currentColor;
+            text-shadow: 0 0 2px currentColor; box-shadow: 0 0 8px currentColor;
             transition: all 0.3s ease;
         }
         .match-block:hover .match-status { box-shadow: 0 0 14px currentColor; }
@@ -373,13 +311,7 @@
         .team-name-big { font-size: 1.15rem; font-weight: 800; margin: 0; line-height: 1.1; letter-spacing: -0.3px; }
         .team-fullname { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
         
-        .center-score-vs { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; /* Dynamic clean vertical stacking spacing */
-        }
+        .center-score-vs { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
         .score-box {
             font-size: 1.3rem; font-weight: 800; background: var(--text-main); color: var(--bg-main);
             padding: 4px 12px; border-radius: 6px; line-height: 1; letter-spacing: -0.5px;
@@ -390,10 +322,6 @@
         .vs-text { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
 
         .match-footer-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--glass-border); }
-        .predictor-wrapper { flex-grow: 1; display: flex; flex-direction: column; gap: 6px; max-width: 300px; }
-        .predictor-labels { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
-        .predictor-track { height: 5px; background: var(--glass-border); border-radius: 6px; display: flex; overflow: hidden; }
-        .pred-bar { height: 100%; }
         .action-buttons { display: flex; gap: 10px; margin-left: auto; }
         .btn-replay {
             background: var(--text-main); color: var(--bg-main); text-decoration: none; font-size: 0.75rem; font-weight: 700;
@@ -404,95 +332,27 @@
         .loading-text { text-align: center; padding: 40px; font-weight: 600; color: var(--text-muted); font-size: 1rem; }
 
         @media (max-width: 600px) {
-            .app-container {
-                padding: 24px 16px;
-            }
-            header {
-                padding: 20px;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-            .header-text {
-                width: 100%;
-                padding: 20px 18px;
-            }
+            .app-container { padding: 24px 16px; }
+            header { padding: 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
+            .header-text { width: 100%; padding: 20px 18px; }
             .header-text h1 { font-size: 2rem; }
-            .dashboard-tier {
-                grid-template-columns: 1fr;
-            }
-            .dash-widget {
-                padding: 18px;
-            }
-            .timetable-list {
-                gap: 18px;
-            }
-            .match-content {
-                padding: 14px 18px;
-            }
-            .match-teams-layout {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            .team-side,
-            .team-side.away-side {
-                flex-direction: row;
-                text-align: left;
-                justify-content: flex-start;
-                gap: 12px;
-            }
-            .team-text-wrapper {
-                min-width: 0;
-            }
-            .team-name-big {
-                font-size: 1rem;
-            }
-            .team-fullname {
-                font-size: 0.72rem;
-            }
-            .center-score-vs {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 10px;
-                align-items: center;
-                justify-content: space-between;
-                padding: 10px 0;
-                border-top: 1px dashed var(--glass-border);
-                border-bottom: 1px dashed var(--glass-border);
-            }
-            .score-box {
-                font-size: 1.15rem;
-                padding: 5px 10px;
-            }
-            .match-footer-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-                padding-top: 10px;
-            }
-            .predictor-wrapper {
-                max-width: 100%;
-            }
-            .action-buttons {
-                margin-left: 0;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .btn-replay {
-                width: 100%;
-                text-align: center;
-                padding: 10px 14px;
-            }
-            .leaderboard-row {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            .leaderboard-team-name {
-                max-width: 140px;
-            }
-            .leaderboard-pts {
-                min-width: auto;
-            }
+            .dashboard-tier { grid-template-columns: 1fr; }
+            .dash-widget { padding: 18px; }
+            .timetable-list { gap: 18px; }
+            .match-content { padding: 14px 18px; }
+            .match-teams-layout { grid-template-columns: 1fr; gap: 16px; }
+            .team-side, .team-side.away-side { flex-direction: row; text-align: left; justify-content: flex-start; gap: 12px; }
+            .team-text-wrapper { min-width: 0; }
+            .team-name-big { font-size: 1rem; }
+            .team-fullname { font-size: 0.72rem; }
+            .center-score-vs { flex-direction: row; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--glass-border); border-bottom: 1px dashed var(--glass-border); }
+            .score-box { font-size: 1.15rem; padding: 5px 10px; }
+            .match-footer-row { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 10px; }
+            .action-buttons { margin-left: 0; flex-wrap: wrap; gap: 8px; }
+            .btn-replay { width: 100%; text-align: center; padding: 10px 14px; }
+            .leaderboard-row { flex-wrap: wrap; gap: 10px; }
+            .leaderboard-team-name { max-width: 140px; }
+            .leaderboard-pts { min-width: auto; }
         }
     </style>
 </head>
@@ -513,7 +373,6 @@
              <div class="header-logo-shell" aria-label="Season 2 Logo">
                      <img class="header-logo" src="league_files/Season 2 Logo (PRIMARY).png">
                 </div>
-            </header>
         </header>
 
         <div class="dashboard-tier">
@@ -550,22 +409,10 @@
 
         // === CENTRAL TEAM ASSETS DICTIONARY ===
         const TEAM_ASSETS = {
-            'LFC': { 
-                primary: 'team_files/s2_lucky_fc_lfc_logo_main.png', 
-                secondary: 'team_files/s2_lucky_fc_lfc_logo_secondary.png' 
-            },
-            'SKS': { 
-                primary: 'team_files/s2_sks_fc_sks_logo_main.png', 
-                secondary: 'team_files/s2_sks_fc_sks_logo_secondary.png' 
-            },
-            'CFC': { 
-                primary: 'team_files/s2_cranbourne_united_fc_cfc_logo_main.png', 
-                secondary: 'team_files/s2_cranbourne_united_fc_cfc_logo_secondary.png' 
-            },
-            'TUR': { 
-                primary: 'team_files/s2_fc_turtle_tur_logo_main.png', 
-                secondary: 'team_files/s2_fc_turtle_tur_logo_secondary.png' 
-            }
+            'LFC': { primary: 'team_files/s2_lucky_fc_lfc_logo_main.png', secondary: 'team_files/s2_lucky_fc_lfc_logo_secondary.png' },
+            'SKS': { primary: 'team_files/s2_sks_fc_sks_logo_main.png', secondary: 'team_files/s2_sks_fc_sks_logo_secondary.png' },
+            'CFC': { primary: 'team_files/s2_cranbourne_united_fc_cfc_logo_main.png', secondary: 'team_files/s2_cranbourne_united_fc_cfc_logo_secondary.png' },
+            'TUR': { primary: 'team_files/s2_fc_turtle_tur_logo_main.png', secondary: 'team_files/s2_fc_turtle_tur_logo_secondary.png' }
         };
 
         function getTeamLogos(code) {
@@ -743,14 +590,23 @@
                 const b = num & 255;
                 return `rgba(${r},${g},${b},${alpha})`;
             }
+
             const mount = document.getElementById('mini-standings-mount');
             let standings = [];
+            let totalActivity = 0; // Tracks games played or points to detect updates
+
             for (let i = 1; i < rows.length; i++) {
                 const rank = parseInt(rows[i][0], 10);
                 const rawName = rows[i][1] ? rows[i][1].trim() : '';
                 if (!rawName) continue;
+                
+                let played = parseInt(rows[i][2], 10); 
                 let pts = parseInt(rows[i][9], 10);
                 if (Number.isNaN(pts)) pts = 0;
+                
+                // Fallback: If Games Played column isn't index 2, rely on points sum
+                totalActivity += (Number.isNaN(played) ? pts : played); 
+
                 const code = normalizeTeamCode(rawName);
                 const teamName = TEAM_NAMES_BY_CODE[code] || rawName;
                 const logoUrl = getTeamLogos(code).primary;
@@ -758,17 +614,62 @@
             }
             standings.sort((a, b) => a.rank - b.rank || b.pts - a.pts);
 
-            const htmlRows = standings.map(team => {
-                const isFinalist = team.rank <= 4;
+            // --- LOCAL STORAGE TRACKING FOR MOVEMENT ARROWS ---
+            const CACHE_KEY = 'hcl_standings_history_s2';
+            let history = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+
+            if (!history) {
+                let currentRanks = {};
+                standings.forEach((t, idx) => currentRanks[t.code] = idx + 1);
+                history = { totalActivity: totalActivity, previousRanks: currentRanks, currentRanks: currentRanks };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(history));
+            } 
+            else if (totalActivity > history.totalActivity) {
+                // An update has occurred (more games played or points gained)
+                history.previousRanks = history.currentRanks; 
+                let newCurrentRanks = {};
+                standings.forEach((t, idx) => newCurrentRanks[t.code] = idx + 1);
+                history.currentRanks = newCurrentRanks;
+                history.totalActivity = totalActivity;
+                localStorage.setItem(CACHE_KEY, JSON.stringify(history));
+            } 
+            else if (totalActivity < history.totalActivity) {
+                // Probable season reset, re-initialize
+                let currentRanks = {};
+                standings.forEach((t, idx) => currentRanks[t.code] = idx + 1);
+                history = { totalActivity: totalActivity, previousRanks: currentRanks, currentRanks: currentRanks };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(history));
+            }
+
+            const htmlRows = standings.map((team, index) => {
+                const rankPos = index + 1;
+                const isFinalist = rankPos <= 4;
                 const ptsClass = isFinalist ? 'top4' : 'grey';
                 const logoHtml = team.logo ? `<img src="${team.logo}" onerror="this.style.display='none';" class="leaderboard-logo">` : `<div class="leaderboard-logo"></div>`;
                 const secondaryLogoUrl = getTeamLogos(team.code).secondary;
                 const secondaryLogoHtml = secondaryLogoUrl ? `<img src="${secondaryLogoUrl}" onerror="this.style.display='none';" class="sec-mini">` : '';
                 const gradColor = TEAM_COLORS[team.code] || '#9ca3af';
                 const gradRgba = hexToRgba(gradColor, 0.12);
+                
+                // Podium classes
+                let topClass = '';
+                if (rankPos === 1) topClass = 'top-1';
+                else if (rankPos === 2) topClass = 'top-2';
+                else if (rankPos === 3) topClass = 'top-3';
+
+                // Movement Logic
+                let prevRank = history.previousRanks[team.code] || rankPos;
+                let movementHtml = `<span class="move-icon move-same">-</span>`;
+                if (prevRank > rankPos) {
+                    movementHtml = `<span class="move-icon move-up">▲</span>`;
+                } else if (prevRank < rankPos) {
+                    movementHtml = `<span class="move-icon move-down">▼</span>`;
+                }
+
                 return `
-                    <div class="leaderboard-row" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
+                    <div class="leaderboard-row ${topClass}" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
                         <div class="leaderboard-team">
+                            <div class="rank-movement">${movementHtml} <span class="rank-num">${team.rank}</span></div>
                             ${logoHtml}
                             ${secondaryLogoHtml}
                             <div>
@@ -798,7 +699,6 @@
             let todayLabel = `${todayObj.getDate()}/${todayObj.getMonth() + 1}`;
             let tomorrowLabel = `${tomorrowObj.getDate()}/${tomorrowObj.getMonth() + 1}`;
 
-            let tickerMatches = [];
             let bucketToday = [];
             let bucketTomorrow = [];
             let bucketWeeks = {};
@@ -829,8 +729,6 @@
                     home: homeTeam, away: awayTeam, homeScore: homeScore, awayScore: awayScore, 
                     homeCode: homeCode, awayCode: awayCode, rawYtLink: rawYtLink 
                 };
-
-                if (dateStr === todayLabel) { tickerMatches.push(payload); }
 
                 if (!dateStr || dateStr.toLowerCase() === "tba" || dateStr.toLowerCase() === "unconfirmed" || status.includes("CONFIRM")) {
                     bucketUnconfirmed.push(payload);
@@ -887,7 +785,6 @@
                 let currentHomeColor = TEAM_COLORS[m.homeCode] || '#9ca3af';
                 let currentAwayColor = TEAM_COLORS[m.awayCode] || '#9ca3af';
 
-                // Look up assets from dictionary
                 const homeAssets = getTeamLogos(m.homeCode);
                 const awayAssets = getTeamLogos(m.awayCode);
 
