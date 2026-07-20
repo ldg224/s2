@@ -177,82 +177,47 @@
             color: var(--text-muted); margin: 0 0 12px 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px;
         }
 
-        .leaderboard-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .leaderboard-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
         .leaderboard-row { 
-            display: flex; align-items: center; justify-content: space-between; gap: 14px; 
-            padding: 12px 14px; border-radius: 20px; 
-            background: rgba(255,255,255,0.04); 
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-            position: relative; overflow: hidden;
-            transition: transform 0.2s ease, background 0.2s ease;
-        }
-        
-        /* Fixed, ultra-thin sparse scrolling stripes for the leaderboard */
-        .leaderboard-row::before {
-            content: '';
-            position: absolute;
-            left: 0; right: 0; top: 0; bottom: 0;
-            background-image: linear-gradient(
-                -45deg, 
-                transparent 49%, 
-                rgba(255, 255, 255, 0.007) 20%, 
-                rgba(255,255,255,0.04) 21%, 
-                transparent 51%
-            );
-            background-size: 80px 80px;
-            z-index: -1;
-            pointer-events: none;
-            animation: stripeSlide 15s linear infinite;
-            border-radius: 10px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; 
+            padding: 10px 12px; border-radius: 20px; 
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+            transition: background 0.2s ease;
+            border-left: 4px solid transparent;
         }
 
         .leaderboard-row:hover {
-            transform: translateX(4px);
-            background: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(255, 255, 255, 0.04);
         }
         
         .leaderboard-row + .leaderboard-row { margin-top: 6px; }
-        .leaderboard-team { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border-radius: 18px; background: rgba(255,255,255,0.03); }
+        .leaderboard-team { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .leaderboard-row { overflow: hidden; }
+        /* Make rank movement pill-shaped */
+        .rank-movement { display: flex; align-items: center; gap: 6px; min-width: 38px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 999px; }
+        .move-icon { font-size: 0.7rem; width: 12px; text-align: center; }
         
         /* Rank Movement Classes */
-        .rank-movement { display: flex; align-items: center; gap: 6px; min-width: 38px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); font-family: var(--font-family); }
-        .move-icon { font-size: 0.7rem; width: 12px; text-align: center; }
+        
         .move-up { color: #34d399; }
         .move-down { color: #ef4444; }
         .move-same { color: #6b7280; }
 
-        .leaderboard-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 14px; background: rgba(255,255,255,0.06); padding: 4px; }
-        .leaderboard-team-name { font-size: 1rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; font-family: var(--font-family); }
-        .leaderboard-team-meta { color: var(--text-muted); font-size: 0.78rem; font-family: var(--font-family); }
-        .leaderboard-pts { padding: 5px 12px; border-radius: 999px; font-size: 0.9rem; font-weight: 800; min-width: 68px; text-align: center; font-family: var(--font-family); }
+        .leaderboard-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 16px; background: rgba(255,255,255,0.06); padding: 4px; }
+        .leaderboard-team-name { font-size: 0.95rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+        .leaderboard-team-meta { color: var(--text-muted); font-size: 0.78rem; }
+        .leaderboard-pts { padding: 6px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 800; min-width: 68px; text-align: center; }
         .leaderboard-pts.top4 { background: linear-gradient(90deg, rgba(118,211,6,0.12), rgba(118,211,6,0.06)); color: var(--brand-solid); box-shadow: 0 6px 18px rgba(118,211,6,0.06), inset 0 1px 0 rgba(255,255,255,0.06); }
         .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); box-shadow: none; }
 
         .leaderboard-row > * { position: relative; z-index: 1; }
-        .leaderboard-row .sec-mini {
-            width: 34px;
-            height: 34px;
-            object-fit: contain;
-            opacity: 0.18;
-            margin-left: 8px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.05);
-            padding: 4px;
-        }
+        .leaderboard-row .sec-mini { width: 18px; height: 18px; object-fit: contain; opacity: 0.06; transform: rotate(-18deg); margin-left: 8px; }
 
-        .leaderboard-score {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 92px;
-            justify-content: flex-end;
-            padding: 8px 10px;
-            border-radius: 16px;
-            background: rgba(255,255,255,0.03);
-        }
-
-        /* Podium accent borders removed for a cleaner leaderboard */
-        /* top 1/2/3 indicators have been de-emphasized */
+        /* Podium accent borders */
+        /* .leaderboard-row.top-1 { border-left-color: #d5d915; } Gold */
+        /* .leaderboard-row.top-2 { border-left-color: #9ca3af; } Silver */
+        /* .leaderboard-row.top-3 { border-left-color: #cd7f32; } Bronze */
 
         .schedule-section-heading {
             font-size: 1.25rem; font-weight: 800; letter-spacing: -0.25px;
@@ -450,7 +415,6 @@
         const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
         const CSV_STANDINGS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=492816603&single=true&output=csv";
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
-        
         
         let ACTIVE_REAL_WEEK = 1;         
         let RAW_SCHEDULE_LINES = [];
@@ -701,25 +665,30 @@
                 const isFinalist = rankPos <= 4;
                 const ptsClass = isFinalist ? 'top4' : 'grey';
                 const logoHtml = team.logo ? `<img src="${team.logo}" onerror="this.style.display='none';" class="leaderboard-logo">` : `<div class="leaderboard-logo"></div>`;
+                const secondaryLogoUrl = getTeamLogos(team.code).secondary;
+                const secondaryLogoHtml = secondaryLogoUrl ? `<img src="${secondaryLogoUrl}" onerror="this.style.display='none';" class="sec-mini">` : '';
                 const gradColor = TEAM_COLORS[team.code] || '#9ca3af';
                 const gradRgba = hexToRgba(gradColor, 0.12);
                 
                 // Podium classes
-                const topClass = '';
+                let topClass = '';
+                if (rankPos === 1) topClass = 'top-1';
+                else if (rankPos === 2) topClass = 'top-2';
+                else if (rankPos === 3) topClass = 'top-3';
 
                 // Movement Logic
                 let prevRank = history.previousRanks[team.code] || rankPos;
-                let rankMovement = prevRank - rankPos;
-                let movementHtml = `<span class="move-icon move-same">─</span>`;
-                if (rankMovement > 0) {
-                    movementHtml = `<span class="move-icon move-up">▲${rankMovement}</span>`;
-                } else if (rankMovement < 0) {
-                    movementHtml = `<span class="move-icon move-down">▼${Math.abs(rankMovement)}</span>`;
+                let movementHtml = `<span class="move-icon move-same">-</span>`;
+                if (prevRank > rankPos) {
+                    movementHtml = `<span class="move-icon move-up">▲</span>`;
+                } else if (prevRank < rankPos) {
+                    movementHtml = `<span class="move-icon move-down">▼</span>`;
                 }
 
                 return `
-                    <div class="leaderboard-row" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
+                    <div class="leaderboard-row ${topClass}" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
                         <div class="leaderboard-team">
+                            <div class="rank-movement">${movementHtml} <span class="rank-num">${team.rank}</span></div>
                             ${logoHtml}
                             ${secondaryLogoHtml}
                             <div>
@@ -727,10 +696,7 @@
                                 <div class="leaderboard-team-meta">${team.name}</div>
                             </div>
                         </div>
-                        <div class="leaderboard-score">
-                            <div class="rank-movement">${movementHtml}</div>
-                            <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
-                        </div>
+                        <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
                     </div>
                 `;
             }).join('');
