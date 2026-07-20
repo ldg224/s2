@@ -161,14 +161,15 @@
         }
 
         .dash-widget {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--glass-shadow);
+            background: linear-gradient(180deg, rgba(18, 20, 26, 0.95), rgba(14, 16, 22, 0.94));
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
+            padding: 22px;
+            box-shadow: 0 26px 55px rgba(0, 0, 0, 0.15);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+            overflow: hidden;
         }
         .dash-widget:nth-child(1) { animation-delay: 80ms; }
 
@@ -180,22 +181,27 @@
         .leaderboard-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
         .leaderboard-row { 
             display: flex; align-items: center; justify-content: space-between; gap: 12px; 
-            padding: 10px 12px; border-radius: 20px; 
-            background: rgba(255, 255, 255, 0.02);
+            padding: 16px 22px; border-radius: 26px; 
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+            box-shadow: 0 18px 34px rgba(0, 0, 0, 0.10);
             position: relative;
-            transition: background 0.2s ease;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-left: 4px solid transparent;
+            overflow: hidden;
         }
 
         .leaderboard-row:hover {
-            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.11);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
         }
         
-        .leaderboard-row + .leaderboard-row { margin-top: 6px; }
+        .leaderboard-row + .leaderboard-row { margin-top: 10px; }
         .leaderboard-team { display: flex; align-items: center; gap: 10px; min-width: 0; }
         .leaderboard-row { overflow: hidden; }
-        /* Make rank movement pill-shaped */
-        .rank-movement { display: flex; align-items: center; gap: 6px; min-width: 38px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 999px; }
+        .leaderboard-score { display: flex; align-items: center; gap: 10px; }
+        .leaderboard-movement { display: flex; align-items: center; gap: 6px; min-width: 42px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 999px; }
         .move-icon { font-size: 0.7rem; width: 12px; text-align: center; }
         
         /* Rank Movement Classes */
@@ -232,10 +238,10 @@
         .timetable-list { display: flex; flex-direction: column; gap: 16px; }
 
         .match-block {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            box-shadow: var(--glass-shadow);
+            background: linear-gradient(180deg, rgba(18, 20, 28, 0.94), rgba(12, 14, 20, 0.96));
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
+            box-shadow: 0 18px 42px rgba(0, 0, 0, 0.12);
             position: relative;
             overflow: hidden;
             opacity: 0;
@@ -244,8 +250,8 @@
         }
         .match-block:hover { 
             transform: translateY(-3px) scale(1.005); 
-            box-shadow: 0 10px 28px rgba(0,0,0,0.07);
-            border-color: rgba(118, 211, 6, 0.25);
+            box-shadow: 0 22px 48px rgba(0,0,0,0.16);
+            border-color: rgba(118, 211, 6, 0.24);
         }
         
         /* Fixed, ultra-thin sparse animated stripes for match blocks */
@@ -343,8 +349,10 @@
         .match-footer-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--glass-border); }
         .action-buttons { display: flex; gap: 10px; margin-left: auto; }
         .btn-replay {
-            background: var(--text-main); color: var(--bg-main); text-decoration: none; font-size: 0.75rem; font-weight: 700;
-            padding: 6px 14px; border-radius: 6px; transition: opacity 0.2s, transform 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main); text-decoration: none; font-size: 0.75rem; font-weight: 700;
+            padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.16);
+            transition: opacity 0.2s, transform 0.2s; text-transform: uppercase; letter-spacing: 0.7px;
         }
         .btn-replay:hover { opacity: 0.9; transform: translateY(-1px); }
         .countdown-banner { font-size: 0.75rem; font-weight: 700; color: var(--status-upcoming); background: rgba(6, 55, 217, 0.1); padding: 6px 14px; border-radius: 6px; }
@@ -447,7 +455,7 @@
             for (const [fullName, code] of Object.entries(TEAM_LOOKUP_MAP)) {
                 if (fullName.toUpperCase() === cleaned) return code;
             }
-            return cleaned.slice(0, 3);
+            return cleaned.length <= 3 ? cleaned : cleaned.slice(0, 3);
         }
 
         function parseYoutubeId(url) {
@@ -525,11 +533,14 @@
                 teamData.forEach((row, i) => {
                     if(i === 0 || !row[0]) return;
                     const teamFullName = row[0];
-                    const teamCode = row[1] || teamFullName.substring(0,3).toUpperCase();
-                    
-                    TEAM_LOOKUP_MAP[teamFullName] = teamCode;
-                    TEAM_COLORS[teamCode] = row[3] ? row[3].trim() : '#9ca3af';
-                });
+                const teamCode = (row[1] || teamFullName.substring(0,3)).toUpperCase().trim();
+                const teamNameKey = teamFullName.toUpperCase().trim();
+                
+                TEAM_LOOKUP_MAP[teamNameKey] = teamCode;
+                TEAM_LOOKUP_MAP[teamCode] = teamCode;
+                TEAM_NAMES_BY_CODE[teamCode] = teamFullName;
+                TEAM_COLORS[teamCode] = row[3] ? row[3].trim() : '#9ca3af';
+            });
 
                 const standingsData = await fetchCSV(CSV_STANDINGS);
                 for(let i = 1; i < standingsData.length; i++) {
@@ -665,8 +676,6 @@
                 const isFinalist = rankPos <= 4;
                 const ptsClass = isFinalist ? 'top4' : 'grey';
                 const logoHtml = team.logo ? `<img src="${team.logo}" onerror="this.style.display='none';" class="leaderboard-logo">` : `<div class="leaderboard-logo"></div>`;
-                const secondaryLogoUrl = getTeamLogos(team.code).secondary;
-                const secondaryLogoHtml = secondaryLogoUrl ? `<img src="${secondaryLogoUrl}" onerror="this.style.display='none';" class="sec-mini">` : '';
                 const gradColor = TEAM_COLORS[team.code] || '#9ca3af';
                 const gradRgba = hexToRgba(gradColor, 0.12);
                 
@@ -678,25 +687,34 @@
 
                 // Movement Logic
                 let prevRank = history.previousRanks[team.code] || rankPos;
-                let movementHtml = `<span class="move-icon move-same">-</span>`;
-                if (prevRank > rankPos) {
-                    movementHtml = `<span class="move-icon move-up">▲</span>`;
-                } else if (prevRank < rankPos) {
-                    movementHtml = `<span class="move-icon move-down">▼</span>`;
+                const placeChange = prevRank - rankPos;
+                let movementIcon = `<span class="move-icon move-same">-</span>`;
+                let movementLabel = '0';
+                let movementClass = 'move-same';
+                if (placeChange > 0) {
+                    movementClass = 'move-up';
+                    movementIcon = `<span class="move-icon move-up">▲</span>`;
+                    movementLabel = `${placeChange}`;
+                } else if (placeChange < 0) {
+                    movementClass = 'move-down';
+                    movementIcon = `<span class="move-icon move-down">▼</span>`;
+                    movementLabel = `${Math.abs(placeChange)}`;
                 }
+                const movementHtml = `${movementIcon} <span class="movement-count">${movementLabel}</span>`;
 
                 return `
                     <div class="leaderboard-row ${topClass}" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
                         <div class="leaderboard-team">
-                            <div class="rank-movement">${movementHtml} <span class="rank-num">${team.rank}</span></div>
                             ${logoHtml}
-                            ${secondaryLogoHtml}
                             <div>
                                 <div class="leaderboard-team-name">${team.code}</div>
                                 <div class="leaderboard-team-meta">${team.name}</div>
                             </div>
                         </div>
-                        <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
+                        <div class="leaderboard-score">
+                            <div class="leaderboard-movement ${movementClass}">${movementHtml}</div>
+                            <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -740,8 +758,8 @@
                 let awayScore = row[7] || "";
                 let rawYtLink = row[8] || "";
 
-                let homeCode = TEAM_LOOKUP_MAP[homeTeam] || "HME";
-                let awayCode = TEAM_LOOKUP_MAP[awayTeam] || "AWY";
+                let homeCode = normalizeTeamCode(homeTeam) || "HME";
+                let awayCode = normalizeTeamCode(awayTeam) || "AWY";
 
                 let payload = { 
                     idx, week: weekNum, date: dateStr, time: timeStr, status: status, 
