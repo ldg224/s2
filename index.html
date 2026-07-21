@@ -67,6 +67,11 @@
             0% { background-position: 0 0, center center; }
             100% { background-position: 80px 80px, center center; }
         }
+        
+        @keyframes moveTracker {
+            from { background-position: 0 0; }
+            to { background-position: 24px 0; }
+        }
 
         .app-container {
             max-width: 900px;
@@ -177,16 +182,15 @@
 
         .leaderboard-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
         
-        /* Fixed jagged edges with explicit 3D transform and backface hidden */
         .leaderboard-row { 
             display: flex; align-items: center; justify-content: space-between; gap: 12px; 
             padding: 16px 22px; border-radius: 26px; 
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
             box-shadow: 0 18px 34px rgba(0, 0, 0, 0.10);
             position: relative;
-            transition: transform 0.2s ease, background 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease, border-left-color 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.12);
-            border-left: 4px solid transparent;
+            border-left: 4px solid var(--row-color, transparent);
             overflow: hidden;
             transform: translateZ(0); 
         }
@@ -203,20 +207,41 @@
         }
         
         .sec-logo-watermark-leaderboard {
-            position: absolute; top: 50%; right: -5%;
-            height: 180%; width: auto;
-            opacity: 0.03;
-            transform: translateY(-50%) rotate(15deg) scale(1);
-            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: absolute; top: 50%; right: 12%;
+            height: 280%; width: auto;
+            opacity: 0.02;
+            transform: translateY(-50%) rotate(-15deg) scale(0.9);
+            filter: grayscale(100%);
+            transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
         }
 
         .leaderboard-row:hover .sec-logo-watermark-leaderboard {
-            transform: translateY(-50%) rotate(5deg) scale(1.1);
+            transform: translateY(-50%) rotate(0deg) scale(1.1);
             opacity: 0.08;
+            filter: grayscale(0%);
         }
 
         .leaderboard-row + .leaderboard-row { margin-top: 10px; }
+        
         .leaderboard-team { display: flex; align-items: center; gap: 10px; min-width: 0; position: relative; z-index: 1; }
+        
+        /* Clean spacer that stays fixed instead of animating */
+        .leaderboard-spacer {
+            flex-grow: 1;
+            height: 2px;
+            margin: 0 18px;
+            background-color: rgba(255, 255, 255, 0.08);
+            opacity: 0.5;
+            transition: opacity 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .leaderboard-row:hover .leaderboard-spacer {
+            opacity: 1;
+            background-color: var(--row-color, rgba(255, 255, 255, 0.9));
+        }
+
         .leaderboard-score { display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
         .leaderboard-movement { display: flex; align-items: center; gap: 6px; min-width: 42px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 999px; }
         .move-icon { font-size: 0.7rem; width: 12px; text-align: center; }
@@ -227,10 +252,10 @@
 
         .leaderboard-logo { width: 34px; height: 34px; object-fit: contain; border-radius: 16px; background: rgba(255,255,255,0.06); padding: 4px; }
         .leaderboard-team-name { font-size: 0.95rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
-        .leaderboard-team-meta { color: var(--text-muted); font-size: 0.78rem; }
+        .leaderboard-team-meta { color: var(--text-muted); font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .leaderboard-pts { padding: 6px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 800; min-width: 68px; text-align: center; }
-        .leaderboard-pts.top4 { background: linear-gradient(90deg, rgba(118,211,6,0.12), rgba(118,211,6,0.06)); color: var(--brand-solid); }
-        .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); }
+        .leaderboard-pts.top4 { background: linear-gradient(90deg, rgba(118,211,6,0.12), rgba(118,211,6,0.06)); color: var(--brand-solid); box-shadow: inset 0 0 0 1px rgba(118,211,6,0.2); }
+        .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); box-shadow: inset 0 0 0 1px rgba(156,163,175,0.1); }
 
         .schedule-section-heading {
             font-size: 1.25rem; font-weight: 800; letter-spacing: -0.25px;
@@ -293,7 +318,6 @@
         .sec-logo-watermark.home-wm { left: -12%; transform: translateY(-50%) rotate(-45deg) scale(1.1); }
         .sec-logo-watermark.away-wm { right: -12%; transform: translateY(-50%) rotate(45deg) scale(1.1); }
 
-        /* Animation effects on hover for match logos */
         .match-block:hover .sec-logo-watermark.home-wm { transform: translateY(-50%) rotate(-35deg) scale(1.25); opacity: 0.07; }
         .match-block:hover .sec-logo-watermark.away-wm { transform: translateY(-50%) rotate(35deg) scale(1.25); opacity: 0.07; }
 
@@ -344,6 +368,15 @@
             .app-container { padding: 24px 16px; }
             header { padding: 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
             .header-text { width: 100%; padding: 20px 18px; }
+            
+            /* Enhanced mobile support for leaderboard row */
+            .leaderboard-row { padding: 12px 14px; gap: 8px; border-radius: 20px; }
+            .leaderboard-logo { width: 28px; height: 28px; border-radius: 10px; }
+            .leaderboard-spacer { margin: 0 10px; }
+            .leaderboard-team-name { font-size: 0.9rem; max-width: 100px; }
+            .leaderboard-movement { min-width: 38px; font-size: 0.75rem; padding: 4px 6px; }
+            .leaderboard-pts { min-width: 56px; font-size: 0.75rem; padding: 4px 8px; }
+
             .match-teams-layout { grid-template-columns: 1fr; gap: 16px; }
             .team-side, .team-side.away-side { flex-direction: row; text-align: left; justify-content: flex-start; gap: 12px; }
             .center-score-vs { flex-direction: row; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--glass-border); border-bottom: 1px dashed var(--glass-border); width: 100%; }
@@ -631,7 +664,6 @@
                 const ptsClass = isFinalist ? 'top4' : 'grey';
                 const logoHtml = team.logo ? `<img src="${team.logo}" onerror="this.style.display='none';" class="leaderboard-logo">` : `<div class="leaderboard-logo"></div>`;
                 const gradColor = TEAM_COLORS[team.code] || '#9ca3af';
-                const gradRgba = hexToRgba(gradColor, 0.12);
                 
                 let prevRank = history.previousRanks[team.code] || rankPos;
                 const placeChange = prevRank - rankPos;
@@ -651,7 +683,7 @@
                 const movementHtml = `${movementIcon} <span class="movement-count">${movementLabel}</span>`;
 
                 return `
-                    <div class="leaderboard-row" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
+                    <div class="leaderboard-row" style="--row-color: ${gradColor}; background: linear-gradient(90deg, ${hexToRgba(gradColor, 0.16)} 0%, ${hexToRgba(gradColor, 0.04)} 40%, transparent 100%);">
                         <div class="leaderboard-bg-logo-wrapper">
                             ${team.secLogo ? `<img src="${team.secLogo}" class="sec-logo-watermark-leaderboard" onerror="this.style.display='none';">` : ''}
                         </div>
@@ -662,6 +694,9 @@
                                 <div class="leaderboard-team-meta">${team.name}</div>
                             </div>
                         </div>
+                        
+                        <div class="leaderboard-spacer"></div>
+
                         <div class="leaderboard-score">
                             <div class="leaderboard-movement ${movementClass}">${movementHtml}</div>
                             <div class="leaderboard-pts ${ptsClass}">${team.pts} PTS</div>
