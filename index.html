@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Heineken C League S2</title>
     <link rel="icon" type="image/png" href="league_files/Season 2 Logo (PRIMARY).png">
 
@@ -36,6 +36,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             background-color: var(--bg-main);
+            -webkit-tap-highlight-color: transparent;
         }
 
         *, *::before, *::after {
@@ -62,7 +63,6 @@
             100% { transform: scale(0.9); opacity: 0.6; }
         }
         
-        /* Fixed animation for a flawless loop */
         @keyframes stripeSlide {
             0% { background-position: 0 0, center center; }
             100% { background-position: 80px 80px, center center; }
@@ -71,7 +71,7 @@
         .app-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
             display: flex;
             flex-direction: column;
             gap: 32px;
@@ -117,7 +117,6 @@
             letter-spacing: -0.8px; 
             color: var(--text-main);
             line-height: 1.05;
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
         .header-text p { 
             margin: 0; 
@@ -167,11 +166,9 @@
             border-radius: 28px;
             padding: 22px;
             box-shadow: 0 26px 55px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
             overflow: hidden;
         }
-        .dash-widget:nth-child(1) { animation-delay: 80ms; }
 
         .dash-title {
             font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
@@ -185,7 +182,7 @@
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
             box-shadow: 0 18px 34px rgba(0, 0, 0, 0.10);
             position: relative;
-            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, background 0.2s ease;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-left: 4px solid transparent;
             overflow: hidden;
@@ -194,17 +191,13 @@
         .leaderboard-row:hover {
             transform: translateY(-2px);
             background: rgba(255, 255, 255, 0.11);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
         }
         
         .leaderboard-row + .leaderboard-row { margin-top: 10px; }
         .leaderboard-team { display: flex; align-items: center; gap: 10px; min-width: 0; }
-        .leaderboard-row { overflow: hidden; }
         .leaderboard-score { display: flex; align-items: center; gap: 10px; }
         .leaderboard-movement { display: flex; align-items: center; gap: 6px; min-width: 42px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); background: rgba(255,255,255,0.02); padding: 4px 8px; border-radius: 999px; }
         .move-icon { font-size: 0.7rem; width: 12px; text-align: center; }
-        
-        /* Rank Movement Classes */
         
         .move-up { color: #34d399; }
         .move-down { color: #ef4444; }
@@ -214,16 +207,8 @@
         .leaderboard-team-name { font-size: 0.95rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
         .leaderboard-team-meta { color: var(--text-muted); font-size: 0.78rem; }
         .leaderboard-pts { padding: 6px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 800; min-width: 68px; text-align: center; }
-        .leaderboard-pts.top4 { background: linear-gradient(90deg, rgba(118,211,6,0.12), rgba(118,211,6,0.06)); color: var(--brand-solid); box-shadow: 0 6px 18px rgba(118,211,6,0.06), inset 0 1px 0 rgba(255,255,255,0.06); }
-        .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); box-shadow: none; }
-
-        .leaderboard-row > * { position: relative; z-index: 1; }
-        .leaderboard-row .sec-mini { width: 18px; height: 18px; object-fit: contain; opacity: 0.06; transform: rotate(-18deg); margin-left: 8px; }
-
-        /* Podium accent borders */
-        /* .leaderboard-row.top-1 { border-left-color: #d5d915; } Gold */
-        /* .leaderboard-row.top-2 { border-left-color: #9ca3af; } Silver */
-        /* .leaderboard-row.top-3 { border-left-color: #cd7f32; } Bronze */
+        .leaderboard-pts.top4 { background: linear-gradient(90deg, rgba(118,211,6,0.12), rgba(118,211,6,0.06)); color: var(--brand-solid); }
+        .leaderboard-pts.grey { background: linear-gradient(90deg, rgba(156,163,175,0.08), rgba(156,163,175,0.03)); color: var(--text-muted); }
 
         .schedule-section-heading {
             font-size: 1.25rem; font-weight: 800; letter-spacing: -0.25px;
@@ -246,45 +231,25 @@
             overflow: hidden;
             opacity: 0;
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
         }
         .match-block:hover { 
             transform: translateY(-3px) scale(1.005); 
-            box-shadow: 0 22px 48px rgba(0,0,0,0.16);
             border-color: rgba(118, 211, 6, 0.24);
         }
         
-        /* Fixed, ultra-thin sparse animated stripes for match blocks */
         .match-block::before {
             content: ''; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image: 
-                linear-gradient(
-                    -45deg, 
-                    transparent 49%, 
-                    rgba(255,255,255,0.04) 49%, 
-                    rgba(255,255,255,0.04) 51%, 
-                    transparent 51%
-                ),
+                linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.04) 49%, rgba(255,255,255,0.04) 51%, transparent 51%),
                 linear-gradient(135deg, var(--h-color) 0%, transparent 45%, transparent 55%, var(--a-color) 100%);
             background-repeat: repeat, no-repeat;
             background-size: 80px 80px, cover;
-            opacity: 0.12; /* Keep it subtle */
+            opacity: 0.12;
             z-index: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
             animation: stripeSlide 15s linear infinite;
-        }
-        .match-block:hover::before {
-            opacity: 0.25;
-        }
-        .match-block::after {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
-            opacity: 0.02;
-            z-index: 1;
-            pointer-events: none;
         }
 
         .bg-logo-wrapper {
@@ -305,9 +270,6 @@
         
         .sec-logo-watermark.home-wm { left: -12%; transform: translateY(-50%) rotate(-45deg) scale(1.1); }
         .sec-logo-watermark.away-wm { right: -12%; transform: translateY(-50%) rotate(45deg) scale(1.1); }
-        .match-block:hover .sec-logo-watermark { opacity: 0.07; }
-        .match-block:hover .sec-logo-watermark.home-wm { transform: translateY(-50%) rotate(-40deg) scale(1.2); }
-        .match-block:hover .sec-logo-watermark.away-wm { transform: translateY(-50%) rotate(40deg) scale(1.2); }
 
         .match-content { position: relative; z-index: 2; padding: 16px 22px; }
         .match-top-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 8px; margin-bottom: 12px; }
@@ -317,20 +279,13 @@
             font-size: 0.7rem; font-weight: 800; text-transform: uppercase; 
             padding: 3px 10px; border-radius: 20px; letter-spacing: 0.8px; 
             background: rgba(0, 0, 0, 0.3); border: 1px solid currentColor;
-            text-shadow: 0 0 2px currentColor; box-shadow: 0 0 8px currentColor;
-            transition: all 0.3s ease;
+            box-shadow: 0 0 8px currentColor;
         }
-        .match-block:hover .match-status { box-shadow: 0 0 14px currentColor; }
 
         .match-teams-layout { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
         .team-side { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .team-side.away-side { flex-direction: row-reverse; text-align: right; }
-        .team-logo-mod { 
-            width: 38px; height: 38px; object-fit: contain; 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .match-block:hover .team-logo-mod { transform: scale(1.08); }
+        .team-logo-mod { width: 38px; height: 38px; object-fit: contain; }
         
         .team-text-wrapper { display: flex; flex-direction: column; }
         .team-name-big { font-size: 1.15rem; font-weight: 800; margin: 0; line-height: 1.1; letter-spacing: -0.3px; }
@@ -339,11 +294,8 @@
         .center-score-vs { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
         .score-box {
             font-size: 1.3rem; font-weight: 800; background: var(--text-main); color: var(--bg-main);
-            padding: 4px 12px; border-radius: 6px; line-height: 1; letter-spacing: -0.5px;
-            box-shadow: 0 3px 10px rgba(48, 48, 48, 0.08);
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 4px 12px; border-radius: 6px; line-height: 1;
         }
-        .match-block:hover .score-box { transform: scale(1.05); }
         .vs-text { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); }
 
         .match-footer-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--glass-border); }
@@ -352,9 +304,8 @@
             background: rgba(255, 255, 255, 0.08);
             color: var(--text-main); text-decoration: none; font-size: 0.75rem; font-weight: 700;
             padding: 8px 16px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.16);
-            transition: opacity 0.2s, transform 0.2s; text-transform: uppercase; letter-spacing: 0.7px;
+            text-transform: uppercase; letter-spacing: 0.7px;
         }
-        .btn-replay:hover { opacity: 0.9; transform: translateY(-1px); }
         .countdown-banner { font-size: 0.75rem; font-weight: 700; color: var(--status-upcoming); background: rgba(6, 55, 217, 0.1); padding: 6px 14px; border-radius: 6px; }
         .loading-text { text-align: center; padding: 40px; font-weight: 600; color: var(--text-muted); font-size: 1rem; }
 
@@ -362,24 +313,10 @@
             .app-container { padding: 24px 16px; }
             header { padding: 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
             .header-text { width: 100%; padding: 20px 18px; }
-            .header-text h1 { font-size: 2rem; }
-            .dashboard-tier { grid-template-columns: 1fr; }
-            .dash-widget { padding: 18px; }
-            .timetable-list { gap: 18px; }
-            .match-content { padding: 14px 18px; }
             .match-teams-layout { grid-template-columns: 1fr; gap: 16px; }
             .team-side, .team-side.away-side { flex-direction: row; text-align: left; justify-content: flex-start; gap: 12px; }
-            .team-text-wrapper { min-width: 0; }
-            .team-name-big { font-size: 1rem; }
-            .team-fullname { font-size: 0.72rem; }
-            .center-score-vs { flex-direction: row; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--glass-border); border-bottom: 1px dashed var(--glass-border); }
-            .score-box { font-size: 1.15rem; padding: 5px 10px; }
-            .match-footer-row { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 10px; }
-            .action-buttons { margin-left: 0; flex-wrap: wrap; gap: 8px; }
+            .center-score-vs { flex-direction: row; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--glass-border); border-bottom: 1px dashed var(--glass-border); width: 100%; }
             .btn-replay { width: 100%; text-align: center; padding: 10px 14px; }
-            .leaderboard-row { flex-wrap: wrap; gap: 10px; }
-            .leaderboard-team-name { max-width: 140px; }
-            .leaderboard-pts { min-width: auto; }
         }
     </style>
 </head>
@@ -398,8 +335,8 @@
                 <p>Welcome. Below are the current match fixtures and standings.</p>
             </div>
              <div class="header-logo-shell" aria-label="Season 2 Logo">
-                     <img class="header-logo" src="league_files/Season 2 Logo (PRIMARY).png">
-                </div>
+                 <img class="header-logo" src="league_files/Season 2 Logo (PRIMARY).png">
+            </div>
         </header>
 
         <div class="dashboard-tier">
@@ -434,12 +371,14 @@
         let TIMEOUT_TRACKERS = [];
         let CLOCKS_TO_INIT = [];
 
-        // === CENTRAL TEAM ASSETS DICTIONARY ===
+        // === CENTRAL TEAM ASSETS DICTIONARY (Expanded for all 6 HCL S2 Teams) ===
         const TEAM_ASSETS = {
             'LFC': { primary: 'team_files/s2_lucky_fc_lfc_logo_main.png', secondary: 'team_files/s2_lucky_fc_lfc_logo_secondary.png' },
             'SKS': { primary: 'team_files/s2_sks_fc_sks_logo_main.png', secondary: 'team_files/s2_sks_fc_sks_logo_secondary.png' },
             'CFC': { primary: 'team_files/s2_cranbourne_united_fc_cfc_logo_main.png', secondary: 'team_files/s2_cranbourne_united_fc_cfc_logo_secondary.png' },
-            'TUR': { primary: 'team_files/s2_fc_turtle_tur_logo_main.png', secondary: 'team_files/s2_fc_turtle_tur_logo_secondary.png' }
+            'TUR': { primary: 'team_files/s2_fc_turtle_tur_logo_main.png', secondary: 'team_files/s2_fc_turtle_tur_logo_secondary.png' },
+            'TEAM5': { primary: 'team_files/s2_team5_logo_main.png', secondary: 'team_files/s2_team5_logo_secondary.png' },
+            'NGR': { primary: 'team_files/s2_tyrone_fc_ngr_logo_main.png', secondary: 'team_files/s2_tyrone_fc_ngr_logo_secondary.png' }
         };
 
         function getTeamLogos(code) {
@@ -533,14 +472,14 @@
                 teamData.forEach((row, i) => {
                     if(i === 0 || !row[0]) return;
                     const teamFullName = row[0];
-                const teamCode = (row[1] || teamFullName.substring(0,3)).toUpperCase().trim();
-                const teamNameKey = teamFullName.toUpperCase().trim();
-                
-                TEAM_LOOKUP_MAP[teamNameKey] = teamCode;
-                TEAM_LOOKUP_MAP[teamCode] = teamCode;
-                TEAM_NAMES_BY_CODE[teamCode] = teamFullName;
-                TEAM_COLORS[teamCode] = row[3] ? row[3].trim() : '#9ca3af';
-            });
+                    const teamCode = (row[1] || teamFullName.substring(0,3)).toUpperCase().trim();
+                    const teamNameKey = teamFullName.toUpperCase().trim();
+                    
+                    TEAM_LOOKUP_MAP[teamNameKey] = teamCode;
+                    TEAM_LOOKUP_MAP[teamCode] = teamCode;
+                    TEAM_NAMES_BY_CODE[teamCode] = teamFullName;
+                    TEAM_COLORS[teamCode] = row[3] ? row[3].trim() : '#9ca3af';
+                });
 
                 const standingsData = await fetchCSV(CSV_STANDINGS);
                 for(let i = 1; i < standingsData.length; i++) {
@@ -591,13 +530,7 @@
             pastMatches.sort((a, b) => b.time - a.time);
 
             if (futureMatches.length > 0) {
-                const nextWeek = futureMatches[0].week;
-                const lastPastWeek = pastMatches.length ? pastMatches[0].week : null;
-                if (lastPastWeek === null || nextWeek >= lastPastWeek) {
-                    ACTIVE_REAL_WEEK = nextWeek;
-                } else {
-                    ACTIVE_REAL_WEEK = lastPastWeek;
-                }
+                ACTIVE_REAL_WEEK = futureMatches[0].week;
                 return;
             }
 
@@ -623,7 +556,7 @@
 
             const mount = document.getElementById('mini-standings-mount');
             let standings = [];
-            let totalActivity = 0; // Tracks games played or points to detect updates
+            let totalActivity = 0;
 
             for (let i = 1; i < rows.length; i++) {
                 const rank = parseInt(rows[i][0], 10);
@@ -634,7 +567,6 @@
                 let pts = parseInt(rows[i][9], 10);
                 if (Number.isNaN(pts)) pts = 0;
                 
-                // Fallback: If Games Played column isn't index 2, rely on points sum
                 totalActivity += (Number.isNaN(played) ? pts : played); 
 
                 const code = normalizeTeamCode(rawName);
@@ -644,30 +576,13 @@
             }
             standings.sort((a, b) => a.rank - b.rank || b.pts - a.pts);
 
-            // --- LOCAL STORAGE TRACKING FOR MOVEMENT ARROWS ---
             const CACHE_KEY = 'hcl_standings_history_s2';
             let history = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
 
-            if (!history) {
+            if (!history || totalActivity > history.totalActivity) {
                 let currentRanks = {};
                 standings.forEach((t, idx) => currentRanks[t.code] = idx + 1);
-                history = { totalActivity: totalActivity, previousRanks: currentRanks, currentRanks: currentRanks };
-                localStorage.setItem(CACHE_KEY, JSON.stringify(history));
-            } 
-            else if (totalActivity > history.totalActivity) {
-                // An update has occurred (more games played or points gained)
-                history.previousRanks = history.currentRanks; 
-                let newCurrentRanks = {};
-                standings.forEach((t, idx) => newCurrentRanks[t.code] = idx + 1);
-                history.currentRanks = newCurrentRanks;
-                history.totalActivity = totalActivity;
-                localStorage.setItem(CACHE_KEY, JSON.stringify(history));
-            } 
-            else if (totalActivity < history.totalActivity) {
-                // Probable season reset, re-initialize
-                let currentRanks = {};
-                standings.forEach((t, idx) => currentRanks[t.code] = idx + 1);
-                history = { totalActivity: totalActivity, previousRanks: currentRanks, currentRanks: currentRanks };
+                history = { totalActivity: totalActivity, previousRanks: history ? history.currentRanks : currentRanks, currentRanks: currentRanks };
                 localStorage.setItem(CACHE_KEY, JSON.stringify(history));
             }
 
@@ -679,13 +594,6 @@
                 const gradColor = TEAM_COLORS[team.code] || '#9ca3af';
                 const gradRgba = hexToRgba(gradColor, 0.12);
                 
-                // Podium classes
-                let topClass = '';
-                if (rankPos === 1) topClass = 'top-1';
-                else if (rankPos === 2) topClass = 'top-2';
-                else if (rankPos === 3) topClass = 'top-3';
-
-                // Movement Logic
                 let prevRank = history.previousRanks[team.code] || rankPos;
                 const placeChange = prevRank - rankPos;
                 let movementIcon = `<span class="move-icon move-same">-</span>`;
@@ -703,7 +611,7 @@
                 const movementHtml = `${movementIcon} <span class="movement-count">${movementLabel}</span>`;
 
                 return `
-                    <div class="leaderboard-row ${topClass}" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
+                    <div class="leaderboard-row" style="background: linear-gradient(90deg, ${gradRgba} 0%, transparent 60%);">
                         <div class="leaderboard-team">
                             ${logoHtml}
                             <div>
@@ -813,11 +721,7 @@
                 }
 
                 let countdownHTML = "";
-
-                const isPlaceholderMatch = m.home.toUpperCase().includes("WINNER") || 
-                                           m.away.toUpperCase().includes("WINNER") || 
-                                           m.home.toUpperCase().includes("TBA") || 
-                                           m.away.toUpperCase().includes("TBA");
+                const isPlaceholderMatch = m.home.toUpperCase().includes("WINNER") || m.home.toUpperCase().includes("TBA");
 
                 let currentHomeColor = TEAM_COLORS[m.homeCode] || '#9ca3af';
                 let currentAwayColor = TEAM_COLORS[m.awayCode] || '#9ca3af';
@@ -825,15 +729,10 @@
                 const homeAssets = getTeamLogos(m.homeCode);
                 const awayAssets = getTeamLogos(m.awayCode);
 
-                let homeLogoUrl = homeAssets.primary;
-                let awayLogoUrl = awayAssets.primary;
-                let homeSecLogoUrl = homeAssets.secondary;
-                let awaySecLogoUrl = awayAssets.secondary;
-
-                if (isPlaceholderMatch) { 
-                    homeLogoUrl = ""; awayLogoUrl = ""; 
-                    homeSecLogoUrl = ""; awaySecLogoUrl = ""; 
-                }
+                let homeLogoUrl = isPlaceholderMatch ? "" : homeAssets.primary;
+                let awayLogoUrl = isPlaceholderMatch ? "" : awayAssets.primary;
+                let homeSecLogoUrl = isPlaceholderMatch ? "" : homeAssets.secondary;
+                let awaySecLogoUrl = isPlaceholderMatch ? "" : awayAssets.secondary;
 
                 let homeLogoHtml = homeLogoUrl ? `<img src="${homeLogoUrl}" onerror="this.style.display='none';" class="team-logo-mod">` : '';
                 let awayLogoHtml = awayLogoUrl ? `<img src="${awayLogoUrl}" onerror="this.style.display='none';" class="team-logo-mod">` : '';
@@ -888,9 +787,7 @@
 
                             ${scheduleReplayBtn ? `
                                 <div class="match-footer-row">
-                                    <div class="action-buttons">
-                                        ${scheduleReplayBtn}
-                                    </div>
+                                    <div class="action-buttons">${scheduleReplayBtn}</div>
                                 </div>
                             ` : ''}
 
