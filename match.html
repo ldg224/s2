@@ -316,9 +316,14 @@
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
         const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
 
-        function normalizeStr(str) {
-            return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-        }
+        const TEAM_ASSETS = {
+            'LFC': { primary: 'team_files/s2_lucky_fc_lfc_logo_main.png', secondary: 'team_files/s2_lucky_fc_lfc_logo_secondary.png' },
+            'SKS': { primary: 'team_files/s2_sks_fc_sks_logo_main.png', secondary: 'team_files/s2_sks_fc_sks_logo_secondary.png' },
+            'CFC': { primary: 'team_files/s2_cranbourne_united_fc_cfc_logo_main.png', secondary: 'team_files/s2_cranbourne_united_fc_cfc_logo_secondary.png' },
+            'TUR': { primary: 'team_files/s2_fc_turtle_tur_logo_main.png', secondary: 'team_files/s2_fc_turtle_tur_logo_secondary.png' },
+            'TEAM5': { primary: 'team_files/s2_team5_logo_main.png', secondary: 'team_files/s2_team5_logo_secondary.png' },
+            'NGR': { primary: 'team_files/s2_tyrone_fc_ngr_logo_main.png', secondary: 'team_files/s2_tyrone_fc_ngr_logo_secondary.png' }
+        };
 
         function getContrastYIQ(hexcolor){
             if (!hexcolor) return '#0f1115';
@@ -331,6 +336,7 @@
             return (yiq >= 128) ? '#0f1115' : '#ffffff';
         }
 
+        // Helper to convert hex to radial gradient for player nodes
         function getRadialGradient(hex) {
             return `radial-gradient(circle at 35% 35%, ${hex}, #0b0d11)`;
         }
@@ -346,72 +352,20 @@
             return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
         }
 
-        function parseCSV(text) {
-            const lines = [];
-            let row = [];
-            let field = '';
-            let inQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                const c = text[i];
-                const next = text[i+1];
-                if (c === '"') {
-                    if (inQuotes && next === '"') { field += '"'; i++; }
-                    else { inQuotes = !inQuotes; }
-                } else if (c === ',' && !inQuotes) {
-                    row.push(field.trim());
-                    field = '';
-                } else if ((c === '\r' || c === '\n') && !inQuotes) {
-                    if (c === '\r' && next === '\n') { i++; }
-                    row.push(field.trim());
-                    if (row.some(f => f !== '')) lines.push(row);
-                    row = [];
-                    field = '';
-                } else {
-                    field += c;
-                }
-            }
-            if (field || row.length) {
-                row.push(field.trim());
-                if (row.some(f => f !== '')) lines.push(row);
-            }
-            return lines;
-        }
-
         async function fetchCSV(url) {
             const res = await fetch(url);
             const text = await res.text();
-            return parseCSV(text);
-        }
-
-        function parseDateTime(dateStr, timeStr) {
-            if (!dateStr) return null;
-            let day, month, year;
-            if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                day = parseInt(parts[0], 10);
-                month = parseInt(parts[1], 10) - 1;
-                year = parseInt(parts[2], 10);
-            } else if (dateStr.includes('-')) {
-                const parts = dateStr.split('-');
-                year = parseInt(parts[0], 10);
-                month = parseInt(parts[1], 10) - 1;
-                day = parseInt(parts[2], 10);
-            } else {
-                return null;
-            }
-            let hours = 0, minutes = 0;
-            if (timeStr) {
-                const tParts = timeStr.split(':');
-                hours = parseInt(tParts[0], 10) || 0;
-                minutes = parseInt(tParts[1], 10) || 0;
-            }
-            return new Date(year, month, day, hours, minutes);
-        }
-
-        function getDynamicTeamAssets(teamCode, teamRow) {
-            let primary = (teamRow && teamRow[4] && teamRow[4].trim()) ? teamRow[4].trim() : `team_files/s2_${teamCode.toLowerCase()}_logo_main.png`;
-            let secondary = (teamRow && teamRow[5] && teamRow[5].trim()) ? teamRow[5].trim() : `team_files/s2_${teamCode.toLowerCase()}_logo_secondary.png`;
-            return { primary, secondary };
+            return text.split(/\r\n|\n/).map(line => {
+                let result = []; let current = ''; let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                    else current += char;
+                }
+                result.push(current.trim());
+                return result;
+            });
         }
 
         function buildRosterTable(players) {
@@ -443,6 +397,7 @@
                     ${lines[posKey].map(p => {
                         const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
                         let goalIcons = '';
+                        // Only show goal counts if match has started/finalised
                         if (isLiveOrFinalised && p.goals > 0) {
                             goalIcons = '<div class="goal-stack">';
                             for(let g=0; g<p.goals; g++) goalIcons += '<span class="goal-icon">⚽</span>';
@@ -480,78 +435,70 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
+                // Map Core Team Meta
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
                     if (i === 0 || !row || !row[0]) return;
-                    const code = row[1].trim().toUpperCase();
-                    teamsMap[code] = {
+                    teamsMap[row[1].trim().toUpperCase()] = {
                         name: row[0].trim(),
-                        code: code,
+                        code: row[1].trim().toUpperCase(),
                         manager: row[2] ? row[2].trim() : 'TBA',
                         hex: row[3] ? row[3].trim() : '#475569',
-                        rank: 'N/A', points: 0,
-                        rawRow: row
+                        rank: 'N/A', points: 0
                     };
                 });
 
+                // Map Standings
                 standingsRaw.forEach((row, i) => {
                     if (i === 0 || !row || !row[1]) return;
-                    let tNameNorm = normalizeStr(row[1]);
-                    let tCode = Object.keys(teamsMap).find(k => normalizeStr(teamsMap[k].name) === tNameNorm || normalizeStr(k) === tNameNorm);
+                    let tName = row[1].trim().toUpperCase();
+                    let tCode = null;
+                    Object.keys(teamsMap).forEach(k => { if(teamsMap[k].name.toUpperCase() === tName) tCode = k; });
                     if(tCode) {
                         teamsMap[tCode].rank = row[0];
                         teamsMap[tCode].points = parseInt(row[9]) || 0;
                     }
                 });
 
+                // Retrieve Specific Match
                 let targetMatch = scheduleRaw.find(row => {
                     if(!row || !row[4] || !row[6]) return false;
-                    const rWeekNorm = normalizeStr(row[0]);
-                    const qWeekNorm = normalizeStr(queryWeek);
-
-                    const rHomeNorm = normalizeStr(row[4]);
-                    const rAwayNorm = normalizeStr(row[6]);
-
-                    const qHomeNorm = normalizeStr(queryHome);
-                    const qAwayNorm = normalizeStr(queryAway);
-
-                    const matchWeek = rWeekNorm === qWeekNorm || rWeekNorm.endsWith(qWeekNorm);
+                    const rWeek = row[0].trim();
+                    const rHomeName = row[4].trim().toUpperCase();
+                    const rAwayName = row[6].trim().toUpperCase();
                     
-                    let homeMatches = (rHomeNorm === qHomeNorm);
-                    let awayMatches = (rAwayNorm === qAwayNorm);
-
-                    if (!homeMatches && teamsMap[queryHome.toUpperCase()]) {
-                        homeMatches = normalizeStr(teamsMap[queryHome.toUpperCase()].name) === rHomeNorm;
-                    }
-                    if (!awayMatches && teamsMap[queryAway.toUpperCase()]) {
-                        awayMatches = normalizeStr(teamsMap[queryAway.toUpperCase()].name) === rAwayNorm;
-                    }
-
-                    return matchWeek && homeMatches && awayMatches;
+                    let rHomeCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === rHomeName) || rHomeName;
+                    let rAwayCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === rAwayName) || rAwayName;
+                    
+                    return (rWeek === queryWeek && rHomeCode === queryHome && rAwayCode === queryAway);
                 });
 
                 if (!targetMatch) throw new Error("Match not found in system.");
 
-                const hCode = queryHome.toUpperCase();
-                const aCode = queryAway.toUpperCase();
-                const hMeta = teamsMap[hCode] || { name: targetMatch[4], hex: '#3b82f6', manager: 'TBA', rank: 'N/A', points: 0, rawRow: null };
-                const aMeta = teamsMap[aCode] || { name: targetMatch[6], hex: '#ef4444', manager: 'TBA', rank: 'N/A', points: 0, rawRow: null };
+                const hCode = queryHome;
+                const aCode = queryAway;
+                const hMeta = teamsMap[hCode] || { name: targetMatch[4], hex: '#3b82f6', manager: 'TBA', rank: 'N/A', points: 0 };
+                const aMeta = teamsMap[aCode] || { name: targetMatch[6], hex: '#ef4444', manager: 'TBA', rank: 'N/A', points: 0 };
                 
-                const hAssets = getDynamicTeamAssets(hCode, hMeta.rawRow);
-                const aAssets = getDynamicTeamAssets(aCode, aMeta.rawRow);
+                const hLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].primary) ? TEAM_ASSETS[hCode].primary : '';
+                const aLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].primary) ? TEAM_ASSETS[aCode].primary : '';
+                const hSecLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].secondary) ? TEAM_ASSETS[hCode].secondary : '';
+                const aSecLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].secondary) ? TEAM_ASSETS[aCode].secondary : '';
 
+                // --- SCHEDULED TIME LOCK REVEAL LOGIC ---
                 const rawStatus = (targetMatch[3] || '').trim().toUpperCase();
                 const matchDateStr = targetMatch[1] ? targetMatch[1].trim() : '';
                 const matchTimeStr = targetMatch[2] ? targetMatch[2].trim() : '';
                 
                 let isScheduledTimeReached = true;
                 if (matchDateStr && matchTimeStr) {
-                    const scheduledDateTime = parseDateTime(matchDateStr, matchTimeStr);
-                    if (scheduledDateTime && !isNaN(scheduledDateTime.getTime())) {
+                    const scheduledDateTime = new Date(`${matchDateStr} ${matchTimeStr}`);
+                    if (!isNaN(scheduledDateTime.getTime())) {
                         isScheduledTimeReached = new Date() >= scheduledDateTime;
                     }
                 }
 
+                // Match details (scores, events, goals) revealed ONLY IF finalized/live AND time has been reached
                 let isFinalised = rawStatus.includes("FINALISED") && isScheduledTimeReached;
                 let isLive = rawStatus.includes("ACTIVE") || rawStatus.includes("LIVE");
                 
@@ -568,6 +515,7 @@
 
                 let ytEmbed = parseYouTubeEmbed(targetMatch[8]);
 
+                // Map Rosters
                 let hRoster = [], aRoster = [];
                 let hStats = { off:0, def:0, count:0 }, aStats = { off:0, def:0, count:0 };
 
@@ -579,11 +527,8 @@
                     let regexVal = /\((\d+)\)/;
                     let offStr = row[4] ? row[4].trim() : '';
                     let defStr = row[5] ? row[5].trim() : '';
-                    
-                    let offMatch = offStr.match(regexVal);
-                    let defMatch = defStr.match(regexVal);
-                    let off = offMatch ? parseInt(offMatch[1], 10) : (parseInt(offStr, 10) || 0);
-                    let def = defMatch ? parseInt(defMatch[1], 10) : (parseInt(defStr, 10) || 0);
+                    let off = offStr.match(regexVal) ? parseInt(offStr.match(regexVal)[1]) : 0;
+                    let def = defStr.match(regexVal) ? parseInt(defStr.match(regexVal)[1]) : 0;
                     
                     let posCode = 'DEF';
                     if(row[2]) {
@@ -606,27 +551,21 @@
                         totalScore: off + def
                     };
 
-                    let normAssigned = normalizeStr(assigned);
-                    let normH = normalizeStr(hMeta.name);
-                    let normA = normalizeStr(aMeta.name);
-
-                    if(normAssigned.includes(normH) || normAssigned.includes(normalizeStr(hCode))) { 
-                        hRoster.push(pObj); hStats.off+=off; hStats.def+=def; hStats.count++; 
-                    } else if(normAssigned.includes(normA) || normAssigned.includes(normalizeStr(aCode))) { 
-                        aRoster.push(pObj); aStats.off+=off; aStats.def+=def; aStats.count++; 
-                    }
+                    if(assigned.includes(hMeta.name.toUpperCase())) { hRoster.push(pObj); hStats.off+=off; hStats.def+=def; hStats.count++; }
+                    else if(assigned.includes(aMeta.name.toUpperCase())) { aRoster.push(pObj); aStats.off+=off; aStats.def+=def; aStats.count++; }
                 });
 
                 if (hRoster.length > 0) hRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, hRoster[0]).isCaptain = true;
                 if (aRoster.length > 0) aRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, aRoster[0]).isCaptain = true;
 
+                // Process Goals only if match is live/finalised & time reached
                 let matchEvents = [];
                 if (isFinalised || isLive) {
                     for(let g=0; g<6; g++) {
                         let minCol = 9 + (g*2);
                         let idCol = 10 + (g*2);
                         if(targetMatch[minCol] && targetMatch[idCol]) {
-                            let mn = parseInt(targetMatch[minCol].trim(), 10);
+                            let mn = parseInt(targetMatch[minCol].trim());
                             let pIdRaw = targetMatch[idCol].trim();
                             let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
                             if(!isNaN(mn) && pId) matchEvents.push({ min: mn, id: pId });
@@ -665,6 +604,7 @@
                     }).join('');
                 }
 
+                // Win Probability calculation
                 let hPts = hMeta.points || 0;
                 let aPts = aMeta.points || 0;
                 let totalPts = hPts + aPts;
@@ -675,26 +615,17 @@
                     pDraw = 100 - (pHome + pAway);
                 }
 
-                const hAvgOff = hStats.count ? (hStats.off / hStats.count) : 0;
-                const aAvgOff = aStats.count ? (aStats.off / aStats.count) : 0;
-                const hAvgDef = hStats.count ? (hStats.def / hStats.count) : 0;
-                const aAvgDef = aStats.count ? (aStats.def / aStats.count) : 0;
-
-                const hOffPct = Math.min(100, Math.max(0, hAvgOff > 10 ? hAvgOff : hAvgOff * 10));
-                const aOffPct = Math.min(100, Math.max(0, aAvgOff > 10 ? aAvgOff : aAvgOff * 10));
-                const hDefPct = Math.min(100, Math.max(0, hAvgDef > 10 ? hAvgDef : hAvgDef * 10));
-                const aDefPct = Math.min(100, Math.max(0, aAvgDef > 10 ? aAvgDef : aAvgDef * 10));
-
+                // Build Final Page
                 document.getElementById('app-mount').innerHTML = `
                     <div class="dash-widget scoreboard-outer-card" style="--h-color: ${hMeta.hex}; --a-color: ${aMeta.hex}; border-left: 4px solid ${hMeta.hex}; border-right: 4px solid ${aMeta.hex};">
                         
                         <div class="bg-logo-wrapper">
-                            ${hAssets.secondary ? `<img src="${hAssets.secondary}" class="sec-logo-watermark home-wm" onerror="this.style.display='none';">` : ''}
-                            ${aAssets.secondary ? `<img src="${aAssets.secondary}" class="sec-logo-watermark away-wm" onerror="this.style.display='none';">` : ''}
+                            ${hSecLogoUrl ? `<img src="${hSecLogoUrl}" class="sec-logo-watermark home-wm" onerror="this.style.display='none';">` : ''}
+                            ${aSecLogoUrl ? `<img src="${aSecLogoUrl}" class="sec-logo-watermark away-wm" onerror="this.style.display='none';">` : ''}
                         </div>
                         
                         <div class="team-side home-side">
-                            <img src="${hAssets.primary}" class="team-logo-lg" onerror="this.style.display='none';">
+                            <img src="${hLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">
                             <div>
                                 <h2 class="team-name-lg">${hMeta.name}</h2>
                                 <p class="team-manager-sm">${hMeta.manager}</p>
@@ -709,7 +640,7 @@
                         </div>
 
                         <div class="team-side away-side">
-                            <img src="${aAssets.primary}" class="team-logo-lg" onerror="this.style.display='none';">
+                            <img src="${aLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">
                             <div>
                                 <h2 class="team-name-lg">${aMeta.name}</h2>
                                 <p class="team-manager-sm">${aMeta.manager}</p>
@@ -757,20 +688,20 @@
                         
                         <div class="integrated-performance-hud">
                             <div>
-                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${Math.round(hAvgOff * 10) / 10}</span></div>
-                                <div class="stat-split-track"><div style="width: ${hOffPct}%; background: linear-gradient(90deg, #059669, #34d399);"></div></div>
+                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.off/hStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.off/hStats.count)*10 : 0}%; background: linear-gradient(90deg, #059669, #34d399);"></div></div>
                             </div>
                             <div>
-                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${Math.round(aAvgOff * 10) / 10}</span></div>
-                                <div class="stat-split-track"><div style="width: ${aOffPct}%; background: linear-gradient(90deg, #059669, #34d399); margin-left: auto;"></div></div>
+                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.off/aStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.off/aStats.count)*10 : 0}%; background: linear-gradient(90deg, #059669, #34d399); margin-left: auto;"></div></div>
                             </div>
                             <div>
-                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${Math.round(hAvgDef * 10) / 10}</span></div>
-                                <div class="stat-split-track"><div style="width: ${hDefPct}%; background: linear-gradient(90deg, #2563eb, #60a5fa);"></div></div>
+                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.def/hStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.def/hStats.count)*10 : 0}%; background: linear-gradient(90deg, #2563eb, #60a5fa);"></div></div>
                             </div>
                             <div>
-                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${Math.round(aAvgDef * 10) / 10}</span></div>
-                                <div class="stat-split-track"><div style="width: ${aDefPct}%; background: linear-gradient(90deg, #2563eb, #60a5fa); margin-left: auto;"></div></div>
+                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.def/aStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.def/aStats.count)*10 : 0}%; background: linear-gradient(90deg, #2563eb, #60a5fa); margin-left: auto;"></div></div>
                             </div>
                         </div>
                     </div>
