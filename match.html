@@ -7,7 +7,6 @@
     <link rel="icon" type="image/png" href="league_files/Season 2 Logo (PRIMARY).png">
 
     <style>
-        /* === SEASON 2 THEME VARIABLES & MODERN FONT === */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap');
 
         :root {
@@ -16,16 +15,13 @@
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
             --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            --glass-bg: rgba(20, 22, 27, 0.85);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            --card-grad: linear-gradient(180deg, rgba(18, 20, 26, 0.95), rgba(14, 16, 22, 0.94));
+            --card-grad: linear-gradient(180deg, rgba(22, 25, 33, 0.95), rgba(14, 16, 22, 0.94));
             
             --pitch-green: #0a1f11;
             --pitch-lines: rgba(255, 255, 255, 0.15);
             
-            --brand-solid: #8fff06b1;
-            --status-upcoming: #e6a734e8;
+            --status-upcoming: #e6a734;
             --status-finalised: #34d399;
             --status-live: #10b981;
         }
@@ -72,29 +68,28 @@
         .back-link {
             text-decoration: none; color: var(--text-muted); font-size: 0.9rem;
             font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
-            transition: color 0.2s ease, transform 0.2s ease;
-            background: rgba(20, 22, 27, 0.7); backdrop-filter: blur(12px);
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, rgba(30, 35, 45, 0.8), rgba(18, 20, 26, 0.8));
+            backdrop-filter: blur(12px);
             padding: 10px 20px; border-radius: 999px; border: 1px solid var(--glass-border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         .back-link:hover { 
             color: var(--text-main); 
-            background: rgba(255, 255, 255, 0.08); 
+            background: linear-gradient(135deg, rgba(45, 52, 66, 0.9), rgba(25, 28, 36, 0.9)); 
             transform: translateY(-2px);
         }
 
         .dash-widget {
             background: var(--card-grad); backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border); border-radius: 28px;
-            padding: 24px; box-shadow: 0 26px 55px rgba(0, 0, 0, 0.15);
+            padding: 24px; box-shadow: 0 26px 55px rgba(0, 0, 0, 0.25);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
             position: relative; overflow: hidden;
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
         }
         
-        .dash-widget:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-        }
+        .dash-widget:hover { border-color: rgba(255, 255, 255, 0.15); }
 
         /* Scoreboard Header */
         .scoreboard-outer-card {
@@ -102,7 +97,6 @@
             align-items: center; gap: 20px; padding: 40px 30px;
         }
         
-        /* Integrated animated stripes and watermarks matching index page */
         .scoreboard-outer-card::before {
             content: ''; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -118,20 +112,13 @@
         }
 
         .bg-logo-wrapper {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 1; 
-            pointer-events: none;
-            overflow: hidden;
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1; pointer-events: none; overflow: hidden;
         }
         
         .sec-logo-watermark {
-            position: absolute;
-            top: 50%;
-            height: 180%;
-            width: auto;
-            opacity: 0.04;
-            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: absolute; top: 50%; height: 180%; width: auto;
+            opacity: 0.04; transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             filter: grayscale(100%);
         }
         
@@ -147,19 +134,31 @@
         
         .team-name-lg { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.5px; margin: 0; line-height: 1.1; }
         .team-manager-sm { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-        .team-ladder-rank { font-size: 0.78rem; font-weight: 800; background: rgba(255,255,255,0.06); padding: 4px 12px; border-radius: 6px; margin-top: 4px; border: 1px solid var(--glass-border); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05); }
+        
+        .team-ladder-rank { 
+            font-size: 0.78rem; font-weight: 800; 
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
+            padding: 5px 14px; border-radius: 8px; margin-top: 4px; 
+            border: 1px solid var(--glass-border); box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
+        }
         
         .score-center-block { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 12px; }
         .score-row { font-size: 4rem; font-weight: 900; letter-spacing: -1px; line-height: 1; text-shadow: 0 4px 20px rgba(0,0,0,0.4); }
-        .match-meta-badge { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; padding: 6px 16px; border-radius: 20px; border: 1px solid currentColor; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); }
-        .match-meta-badge.finalised { color: var(--status-finalised); box-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
-        .match-meta-badge.upcoming { color: var(--status-upcoming); box-shadow: 0 0 10px rgba(230, 167, 52, 0.2); }
-        .match-meta-badge.live { color: var(--status-live); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+        
+        .match-meta-badge { 
+            font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; 
+            padding: 6px 16px; border-radius: 20px; border: 1px solid currentColor; 
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(20,20,20,0.4)); 
+            backdrop-filter: blur(4px); 
+        }
+        .match-meta-badge.finalised { color: var(--status-finalised); box-shadow: 0 0 12px rgba(52, 211, 153, 0.25); }
+        .match-meta-badge.upcoming { color: var(--status-upcoming); box-shadow: 0 0 12px rgba(230, 167, 52, 0.25); }
+        .match-meta-badge.live { color: var(--status-live); box-shadow: 0 0 12px rgba(16, 185, 129, 0.25); }
         .match-time-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
 
         /* Win Predictor Strip */
         .predictor-labels { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; position: relative; z-index: 2; }
-        .predictor-track-combined { height: 16px; background: rgba(0,0,0,0.5); border-radius: 8px; display: flex; overflow: hidden; border: 1px solid var(--glass-border); position: relative; z-index: 2; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+        .predictor-track-combined { height: 16px; background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(10,10,10,0.8)); border-radius: 8px; display: flex; overflow: hidden; border: 1px solid var(--glass-border); position: relative; z-index: 2; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
         .predictor-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
         /* Media / Youtube */
@@ -168,16 +167,16 @@
         }
         .media-player-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
-        .section-title { font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0 0 16px 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; position: relative; z-index: 2;}
+        .section-title { font-size: 1.05rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0 0 16px 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; position: relative; z-index: 2;}
 
         /* Pitch Overhaul */
         .field-grand-wrapper {
-            background-color: var(--pitch-green);
+            background: linear-gradient(180deg, #0d2817 0%, #06150b 100%);
             border: 1px solid var(--glass-border); border-radius: 20px;
             box-shadow: inset 0 0 60px rgba(0,0,0,0.8); display: flex; flex-direction: column; overflow: hidden; position: relative;
         }
         .pitch-container-horizontal {
-            background-image: linear-gradient(90deg, rgba(255,255,255,0.04) 50%, transparent 50%);
+            background-image: linear-gradient(90deg, rgba(255,255,255,0.03) 50%, transparent 50%);
             background-size: 60px 100%; height: 440px; position: relative; display: flex; flex-direction: row; width: 100%;
         }
         
@@ -199,22 +198,48 @@
 
         .player-node { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 75px; transition: transform 0.2s ease; }
         .player-node:hover { transform: scale(1.1); z-index: 10; }
-        .player-badge { position: relative; width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 6px 14px rgba(0,0,0,0.6); }
-        .player-name-tag { font-size: 0.7rem; font-weight: 700; color: #fff; background: rgba(10, 12, 16, 0.95); padding: 4px 10px; border-radius: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+        
+        .player-badge { 
+            position: relative; width: 38px; height: 38px; border-radius: 50%; 
+            border: 2px solid rgba(255,255,255,0.85); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 0.9rem; font-weight: 800; 
+            box-shadow: 0 6px 14px rgba(0,0,0,0.6); 
+        }
+        
+        .player-name-tag { 
+            font-size: 0.7rem; font-weight: 700; color: #fff; 
+            background: linear-gradient(135deg, rgba(20, 24, 32, 0.95), rgba(10, 12, 16, 0.95)); 
+            padding: 4px 10px; border-radius: 6px; text-align: center; white-space: nowrap; 
+            overflow: hidden; text-overflow: ellipsis; max-width: 90px; 
+            border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 6px rgba(0,0,0,0.4); 
+        }
         
         .goal-stack { position: absolute; bottom: -8px; right: -12px; display: flex; flex-direction: row; z-index: 5; }
-        .goal-icon { width: 18px; height: 18px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; margin-left: -8px; border: 1px solid #111; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .goal-icon { 
+            width: 18px; height: 18px; 
+            background: radial-gradient(circle at 30% 30%, #ffffff, #d1d5db); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            font-size: 11px; margin-left: -8px; border: 1px solid #111; color: #000; box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+        }
         .goal-icon:first-child { margin-left: 0; }
-        .captain-icon { position: absolute; top: -8px; right: -8px; background: #fbbf24; color: #000; font-size: 0.65rem; font-weight: 900; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #000; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .captain-icon { 
+            position: absolute; top: -8px; right: -8px; 
+            background: linear-gradient(135deg, #fef08a, #f59e0b); 
+            color: #000; font-size: 0.65rem; font-weight: 900; width: 20px; height: 20px; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            border: 2px solid #000; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+        }
 
-        /* Integrated Bottom Performance Matrix Panel */
+        /* Stats Panel */
         .integrated-performance-hud {
-            background: rgba(0, 0, 0, 0.6); border-top: 1px solid var(--glass-border);
+            background: linear-gradient(180deg, rgba(12, 14, 18, 0.85), rgba(6, 7, 9, 0.95)); 
+            border-top: 1px solid var(--glass-border);
             padding: 24px 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 45px; position: relative; z-index: 3; backdrop-filter: blur(10px);
         }
         .stat-labels { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-labels span.stat-val-highlight { color: var(--text-main); font-size: 0.9rem; font-weight: 900; }
-        .stat-split-track { height: 10px; background: rgba(255,255,255,0.08); border-radius: 5px; display: flex; overflow: hidden; margin-top: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
+        .stat-split-track { height: 10px; background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(20,20,20,0.5)); border-radius: 5px; display: flex; overflow: hidden; margin-top: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
 
         /* Events Timeline */
         .timeline-container { position: relative; padding: 20px 0; z-index: 2; }
@@ -226,9 +251,20 @@
         .timeline-event.home-event .timeline-half { justify-content: flex-end; text-align: right; }
         .timeline-event.away-event .timeline-half { justify-content: flex-start; text-align: left; }
         .timeline-empty-half { width: 45%; }
-        .timeline-center-icon { width: 32px; height: 32px; background: var(--bg-main); border: 2px solid var(--glass-border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
-        .event-minute { font-weight: 900; font-size: 0.9rem; padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-        .event-player { font-weight: 700; font-size: 1rem; }
+        
+        .timeline-center-icon { 
+            width: 34px; height: 34px; 
+            background: linear-gradient(135deg, rgba(30, 35, 45, 0.9), rgba(15, 17, 21, 0.9)); 
+            border: 1px solid var(--glass-border); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 15px; z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.6); 
+        }
+        
+        .event-minute { 
+            font-weight: 900; font-size: 0.85rem; padding: 4px 12px; border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 8px rgba(0,0,0,0.4); 
+        }
+        .event-player { font-weight: 700; font-size: 0.95rem; }
 
         /* Squad Roster Tables */
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; z-index: 2; }
@@ -261,15 +297,15 @@
         <nav>
             <a href="index.html" class="back-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Back to Match Portal
+                Back to Matches
             </a>
         </nav>
 
         <main id="app-mount">
             <div style="text-align:center; padding: 80px 0; color: var(--text-muted); font-weight: 600; animation: fadeInUp 0.5s ease;">
-                <div style="display:inline-block; width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--brand-solid); animation: spin 1s linear infinite; margin-bottom: 16px;"></div>
+                <div style="display:inline-block; width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: #34d399; animation: spin 1s linear infinite; margin-bottom: 16px;"></div>
                 <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-                <br>Processing Tactical Data Streams...
+                <br>Loading match details...
             </div>
         </main>
     </div>
@@ -280,7 +316,6 @@
         const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
         const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
 
-        // Integrated Primary and Secondary Logo Assets
         const TEAM_ASSETS = {
             'LFC': { primary: 'team_files/s2_lucky_fc_lfc_logo_main.png', secondary: 'team_files/s2_lucky_fc_lfc_logo_secondary.png' },
             'SKS': { primary: 'team_files/s2_sks_fc_sks_logo_main.png', secondary: 'team_files/s2_sks_fc_sks_logo_secondary.png' },
@@ -299,6 +334,11 @@
             const b = parseInt(hexcolor.substr(4,2),16) || 0;
             const yiq = ((r*299)+(g*587)+(b*114))/1000;
             return (yiq >= 128) ? '#0f1115' : '#ffffff';
+        }
+
+        // Helper to convert hex to radial gradient for player nodes
+        function getRadialGradient(hex) {
+            return `radial-gradient(circle at 35% 35%, ${hex}, #0b0d11)`;
         }
 
         function parseYouTubeEmbed(url) {
@@ -329,7 +369,7 @@
         }
 
         function buildRosterTable(players) {
-            if(!players || players.length === 0) return `<div style="font-size:0.85rem; color:var(--text-muted); font-style:italic; padding: 12px 0;">Roster data unassigned.</div>`;
+            if(!players || players.length === 0) return `<div style="font-size:0.85rem; color:var(--text-muted); font-style:italic; padding: 12px 0;">No players listed.</div>`;
             return `
                 <table class="roster-table">
                     <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>Off</th><th>Def</th></tr></thead>
@@ -348,7 +388,7 @@
             `;
         }
 
-        function buildHorizontalPitchNodes(players, teamHex, textColor) {
+        function buildHorizontalPitchNodes(players, teamHex, textColor, isLiveOrFinalised) {
             const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
             players.forEach(p => { if (p && p.pos && lines[p.pos]) lines[p.pos].push(p); });
             const order = ['GK', 'DEF', 'MID', 'FWD'];
@@ -357,7 +397,8 @@
                     ${lines[posKey].map(p => {
                         const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
                         let goalIcons = '';
-                        if (p.goals > 0) {
+                        // Only show goal counts if match has started/finalised
+                        if (isLiveOrFinalised && p.goals > 0) {
                             goalIcons = '<div class="goal-stack">';
                             for(let g=0; g<p.goals; g++) goalIcons += '<span class="goal-icon">⚽</span>';
                             goalIcons += '</div>';
@@ -366,7 +407,7 @@
 
                         return `
                             <div class="player-node">
-                                <div class="player-badge" style="background-color: ${teamHex}; color: ${textColor};">
+                                <div class="player-badge" style="background: ${getRadialGradient(teamHex)}; color: ${textColor}; border-color: ${teamHex};">
                                     ${p.num}
                                     ${goalIcons}
                                     ${captainHtml}
@@ -387,7 +428,7 @@
                 const queryAway = params.get('away');
 
                 if (!queryWeek || !queryHome || !queryAway) {
-                    throw new Error("Missing tactical URL routing parameters.");
+                    throw new Error("Match missing from link. Please select a match from the schedule.");
                 }
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
@@ -432,7 +473,7 @@
                     return (rWeek === queryWeek && rHomeCode === queryHome && rAwayCode === queryAway);
                 });
 
-                if (!targetMatch) throw new Error("Match signature not found in central database.");
+                if (!targetMatch) throw new Error("Match not found in system.");
 
                 const hCode = queryHome;
                 const aCode = queryAway;
@@ -444,11 +485,33 @@
                 const hSecLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].secondary) ? TEAM_ASSETS[hCode].secondary : '';
                 const aSecLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].secondary) ? TEAM_ASSETS[aCode].secondary : '';
 
-                const matchStatus = (targetMatch[3] || '').trim().toUpperCase();
+                // --- SCHEDULED TIME LOCK REVEAL LOGIC ---
+                const rawStatus = (targetMatch[3] || '').trim().toUpperCase();
+                const matchDateStr = targetMatch[1] ? targetMatch[1].trim() : '';
+                const matchTimeStr = targetMatch[2] ? targetMatch[2].trim() : '';
+                
+                let isScheduledTimeReached = true;
+                if (matchDateStr && matchTimeStr) {
+                    const scheduledDateTime = new Date(`${matchDateStr} ${matchTimeStr}`);
+                    if (!isNaN(scheduledDateTime.getTime())) {
+                        isScheduledTimeReached = new Date() >= scheduledDateTime;
+                    }
+                }
+
+                // Match details (scores, events, goals) revealed ONLY IF finalized/live AND time has been reached
+                let isFinalised = rawStatus.includes("FINALISED") && isScheduledTimeReached;
+                let isLive = rawStatus.includes("ACTIVE") || rawStatus.includes("LIVE");
+                
                 let statusClass = 'upcoming';
-                let isFinalised = false;
-                if(matchStatus.includes("FINALISED")) { statusClass = 'finalised'; isFinalised = true; }
-                else if(matchStatus.includes("ACTIVE")) statusClass = 'live';
+                let displayStatus = 'UPCOMING';
+
+                if (isFinalised) {
+                    statusClass = 'finalised';
+                    displayStatus = 'FINAL';
+                } else if (isLive) {
+                    statusClass = 'live';
+                    displayStatus = 'LIVE';
+                }
 
                 let ytEmbed = parseYouTubeEmbed(targetMatch[8]);
 
@@ -473,7 +536,6 @@
                         if(m) posCode = m[1].toUpperCase();
                     }
 
-                    // Slicing player ID to last two digits as requested
                     let rawNumStr = String(row[0]).trim();
                     let slicedNum = rawNumStr.length > 2 ? rawNumStr.slice(-2) : rawNumStr;
 
@@ -493,30 +555,32 @@
                     else if(assigned.includes(aMeta.name.toUpperCase())) { aRoster.push(pObj); aStats.off+=off; aStats.def+=def; aStats.count++; }
                 });
 
-                // Assign Captains
                 if (hRoster.length > 0) hRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, hRoster[0]).isCaptain = true;
                 if (aRoster.length > 0) aRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, aRoster[0]).isCaptain = true;
 
-                // Process Goals from CSV (Cols 9-20)
+                // Process Goals only if match is live/finalised & time reached
                 let matchEvents = [];
-                for(let g=0; g<6; g++) {
-                    let minCol = 9 + (g*2);
-                    let idCol = 10 + (g*2);
-                    if(targetMatch[minCol] && targetMatch[idCol]) {
-                        let mn = parseInt(targetMatch[minCol].trim());
-                        // Slice goal scorer ID to correctly match with sliced player ID
-                        let pIdRaw = targetMatch[idCol].trim();
-                        let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
-                        if(!isNaN(mn) && pId) matchEvents.push({ min: mn, id: pId });
+                if (isFinalised || isLive) {
+                    for(let g=0; g<6; g++) {
+                        let minCol = 9 + (g*2);
+                        let idCol = 10 + (g*2);
+                        if(targetMatch[minCol] && targetMatch[idCol]) {
+                            let mn = parseInt(targetMatch[minCol].trim());
+                            let pIdRaw = targetMatch[idCol].trim();
+                            let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
+                            if(!isNaN(mn) && pId) matchEvents.push({ min: mn, id: pId });
+                        }
                     }
+                    matchEvents.sort((a,b) => a.min - b.min);
                 }
-                matchEvents.sort((a,b) => a.min - b.min);
 
                 let allPlayers = [...hRoster, ...aRoster];
                 let eventsHtml = '';
                 
-                if(matchEvents.length === 0) {
-                    eventsHtml = `<div style="text-align:center; color:var(--text-muted); font-size:0.9rem; padding:30px 20px; font-style: italic;">No timeline events recorded yet.</div>`;
+                if (!isFinalised && !isLive) {
+                    eventsHtml = `<div style="text-align:center; color:var(--text-muted); font-size:0.9rem; padding:30px 20px; font-style: italic;">Match has not started yet. Timeline updates live during kickoff.</div>`;
+                } else if(matchEvents.length === 0) {
+                    eventsHtml = `<div style="text-align:center; color:var(--text-muted); font-size:0.9rem; padding:30px 20px; font-style: italic;">No goals recorded for this match.</div>`;
                 } else {
                     eventsHtml = matchEvents.map(ev => {
                         let p = allPlayers.find(pl => pl.num === ev.id);
@@ -525,12 +589,12 @@
                         let isHome = p ? hRoster.includes(p) : true;
                         let teamHex = isHome ? hMeta.hex : aMeta.hex;
                         let textColor = getContrastYIQ(teamHex);
-                        let pName = p ? p.name : `Unknown Player #${ev.id}`;
+                        let pName = p ? p.name : `Player #${ev.id}`;
 
                         return `
                             <div class="timeline-event ${isHome ? 'home-event' : 'away-event'}">
                                 <div class="timeline-half">
-                                    <span class="event-minute" style="background:${teamHex}; color:${textColor}; border-color:${teamHex};">${ev.min}'</span>
+                                    <span class="event-minute" style="background: linear-gradient(135deg, ${teamHex}, rgba(0,0,0,0.4)); color:${textColor}; border-color:${teamHex};">${ev.min}'</span>
                                     <span class="event-player">${pName}</span>
                                 </div>
                                 <div class="timeline-center-icon">⚽</div>
@@ -540,7 +604,7 @@
                     }).join('');
                 }
 
-                // Win Probability calculation (strict points ratio)
+                // Win Probability calculation
                 let hPts = hMeta.points || 0;
                 let aPts = aMeta.points || 0;
                 let totalPts = hPts + aPts;
@@ -551,7 +615,7 @@
                     pDraw = 100 - (pHome + pAway);
                 }
 
-                // Build Final DOM
+                // Build Final Page
                 document.getElementById('app-mount').innerHTML = `
                     <div class="dash-widget scoreboard-outer-card" style="--h-color: ${hMeta.hex}; --a-color: ${aMeta.hex}; border-left: 4px solid ${hMeta.hex}; border-right: 4px solid ${aMeta.hex};">
                         
@@ -570,8 +634,8 @@
                         </div>
 
                         <div class="score-center-block">
-                            <div class="match-meta-badge ${statusClass}">${matchStatus}</div>
-                            <div class="score-row">${isFinalised ? (targetMatch[5] || '0') : '-'} <span style="color:var(--text-muted); opacity: 0.5;">:</span> ${isFinalised ? (targetMatch[7] || '0') : '-'}</div>
+                            <div class="match-meta-badge ${statusClass}">${displayStatus}</div>
+                            <div class="score-row">${(isFinalised || isLive) ? (targetMatch[5] || '0') : '-'} <span style="color:var(--text-muted); opacity: 0.5;">:</span> ${(isFinalised || isLive) ? (targetMatch[7] || '0') : '-'}</div>
                             <div class="match-time-label">Week ${queryWeek.toUpperCase()} &bull; ${targetMatch[1] || 'TBA'} &bull; ${targetMatch[2] || 'TBA'}</div>
                         </div>
 
@@ -586,16 +650,16 @@
                     </div>
 
                     <div class="dash-widget">
-                        <div class="section-title">Algorithmic Win Probability</div>
+                        <div class="section-title">Win Chance</div>
                         <div class="predictor-labels">
                             <span>${hCode} (${pHome}%)</span>
                             <span>DRAW (${pDraw}%)</span>
                             <span>${aCode} (${pAway}%)</span>
                         </div>
                         <div class="predictor-track-combined">
-                            <div class="predictor-segment" style="width: ${pHome}%; background: ${hMeta.hex};"></div>
-                            <div class="predictor-segment" style="width: ${pDraw}%; background: rgba(255,255,255,0.06);"></div>
-                            <div class="predictor-segment" style="width: ${pAway}%; background: ${aMeta.hex};"></div>
+                            <div class="predictor-segment" style="width: ${pHome}%; background: linear-gradient(90deg, ${hMeta.hex}, rgba(255,255,255,0.2));"></div>
+                            <div class="predictor-segment" style="width: ${pDraw}%; background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));"></div>
+                            <div class="predictor-segment" style="width: ${pAway}%; background: linear-gradient(90deg, rgba(255,255,255,0.2), ${aMeta.hex});"></div>
                         </div>
                     </div>
 
@@ -615,35 +679,35 @@
                             <div class="pitch-goal-box-right"></div>
                             
                             <div class="pitch-team-half home-left-side">
-                                ${buildHorizontalPitchNodes(hRoster, hMeta.hex, getContrastYIQ(hMeta.hex))}
+                                ${buildHorizontalPitchNodes(hRoster, hMeta.hex, getContrastYIQ(hMeta.hex), isFinalised || isLive)}
                             </div>
                             <div class="pitch-team-half away-right-side">
-                                ${buildHorizontalPitchNodes(aRoster, aMeta.hex, getContrastYIQ(aMeta.hex))}
+                                ${buildHorizontalPitchNodes(aRoster, aMeta.hex, getContrastYIQ(aMeta.hex), isFinalised || isLive)}
                             </div>
                         </div>
                         
                         <div class="integrated-performance-hud">
                             <div>
-                                <div class="stat-labels"><span>Offensive Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.off/hStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.off/hStats.count)*10 : 0}%; background: #34d399;"></div></div>
+                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.off/hStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.off/hStats.count)*10 : 0}%; background: linear-gradient(90deg, #059669, #34d399);"></div></div>
                             </div>
                             <div>
-                                <div class="stat-labels"><span>Offensive Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.off/aStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.off/aStats.count)*10 : 0}%; background: #34d399; margin-left: auto;"></div></div>
+                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.off/aStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.off/aStats.count)*10 : 0}%; background: linear-gradient(90deg, #059669, #34d399); margin-left: auto;"></div></div>
                             </div>
                             <div>
-                                <div class="stat-labels"><span>Defensive Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.def/hStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.def/hStats.count)*10 : 0}%; background: #60a5fa;"></div></div>
+                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.def/hStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.def/hStats.count)*10 : 0}%; background: linear-gradient(90deg, #2563eb, #60a5fa);"></div></div>
                             </div>
                             <div>
-                                <div class="stat-labels"><span>Defensive Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.def/aStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.def/aStats.count)*10 : 0}%; background: #60a5fa; margin-left: auto;"></div></div>
+                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.def/aStats.count*10)/10 : 0}</span></div>
+                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.def/aStats.count)*10 : 0}%; background: linear-gradient(90deg, #2563eb, #60a5fa); margin-left: auto;"></div></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="dash-widget">
-                        <div class="section-title" style="text-align: center; border-bottom:0;">Match Events Timeline</div>
+                        <div class="section-title" style="text-align: center; border-bottom:0;">Match Timeline</div>
                         <div class="timeline-container">
                             <div class="timeline-line"></div>
                             ${eventsHtml}
@@ -653,13 +717,13 @@
                     <div class="dash-widget roster-lists">
                         <div>
                             <div class="section-title" style="color: ${hMeta.hex}; display:flex; align-items:center; gap:10px;">
-                                <div style="width:14px; height:14px; background:${hMeta.hex}; border-radius:50%; box-shadow: 0 0 10px ${hMeta.hex};"></div> ${hCode} Squad
+                                <div style="width:14px; height:14px; background: linear-gradient(135deg, ${hMeta.hex}, rgba(255,255,255,0.4)); border-radius:50%; box-shadow: 0 0 10px ${hMeta.hex};"></div> ${hCode} Lineup
                             </div>
                             ${buildRosterTable(hRoster)}
                         </div>
                         <div>
                             <div class="section-title" style="color: ${aMeta.hex}; display:flex; align-items:center; gap:10px;">
-                                <div style="width:14px; height:14px; background:${aMeta.hex}; border-radius:50%; box-shadow: 0 0 10px ${aMeta.hex};"></div> ${aCode} Squad
+                                <div style="width:14px; height:14px; background: linear-gradient(135deg, ${aMeta.hex}, rgba(255,255,255,0.4)); border-radius:50%; box-shadow: 0 0 10px ${aMeta.hex};"></div> ${aCode} Lineup
                             </div>
                             ${buildRosterTable(aRoster)}
                         </div>
@@ -667,9 +731,9 @@
                 `;
             } catch (err) {
                 document.getElementById('app-mount').innerHTML = `
-                    <div style="text-align:center; padding: 60px 20px; color: #ef4444; border: 1px dashed rgba(239, 68, 68, 0.4); border-radius: 20px; background: rgba(239, 68, 68, 0.05); backdrop-filter: blur(8px);">
-                        <h3 style="margin-top:0; letter-spacing: 1px;">CRITICAL ENGINE FAILURE</h3>
-                        <p style="font-family:monospace; margin-bottom:0;">${err.message}</p>
+                    <div style="text-align:center; padding: 60px 20px; color: #f87171; border: 1px dashed rgba(248, 113, 113, 0.3); border-radius: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(15, 17, 21, 0.5)); backdrop-filter: blur(8px);">
+                        <h3 style="margin-top:0;">Match Information Unavailable</h3>
+                        <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted);">${err.message}</p>
                     </div>`;
                 console.error(err);
             }
