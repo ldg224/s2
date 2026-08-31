@@ -353,9 +353,12 @@
 
         async function fetchCSV(url) {
             const res = await fetch(url);
+            if(!res.ok) throw new Error("Network response was not ok");
             const text = await res.text();
             return text.split(/\r\n|\n/).map(line => {
-                let result = []; let current = ''; let inQuotes = false;
+                let result = [];
+                let current = '';
+                let inQuotes = false;
                 for (let i = 0; i < line.length; i++) {
                     let char = line[i];
                     if (char === '"') inQuotes = !inQuotes;
@@ -367,389 +370,393 @@
             });
         }
 
-        function buildRosterTable(players) {
-            if(!players || players.length === 0) return `<div style="font-size:0.85rem; color:var(--text-muted); font-style:italic; padding: 12px 0;">No players listed.</div>`;
-            return `
-                <table class="roster-table">
-                    <thead><tr><th>#</th><th>Name</th><th>Pos</th><th>Off</th><th>Def</th></tr></thead>
-                    <tbody>
-                        ${players.map(p => `
-                            <tr>
-                                <td style="color:var(--text-muted); font-family:monospace; font-weight: 700;">${p.num}</td>
-                                <td>${p.name}</td>
-                                <td style="color:var(--text-muted); font-size:0.75rem;">${p.pos}</td>
-                                <td style="color:#34d399;">${p.off}</td>
-                                <td style="color:#60a5fa;">${p.def}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        function buildHorizontalPitchNodes(players, teamHex, textColor, isLiveOrFinalised) {
-            const lines = { 'GK': [], 'DEF': [], 'MID': [], 'FWD': [] };
-            players.forEach(p => { if (p && p.pos && lines[p.pos]) lines[p.pos].push(p); });
-            const order = ['GK', 'DEF', 'MID', 'FWD'];
-            return order.map(posKey => `
-                <div class="pitch-column-band">
-                    ${lines[posKey].map(p => {
-                        const nameParts = p.name ? p.name.trim().split(' ') : ['Unknown'];
-                        let goalIcons = '';
-                        if (isLiveOrFinalised && p.goals > 0) {
-                            goalIcons = '<div class="goal-stack">';
-                            for(let g=0; g<p.goals; g++) goalIcons += '<span class="goal-icon">⚽</span>';
-                            goalIcons += '</div>';
-                        }
-                        let captainHtml = p.isCaptain ? '<div class="captain-icon">C</div>' : '';
-
-                        return `
-                            <div class="player-node">
-                                <div class="player-badge" style="background: ${getRadialGradient(teamHex)}; color: ${textColor}; border-color: ${teamHex};">
-                                    ${p.num}
-                                    ${goalIcons}
-                                    ${captainHtml}
-                                </div>
-                                <div class="player-name-tag">${nameParts[nameParts.length - 1]}</div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `).join('');
-        }
-
         async function bootApp() {
             try {
-                const params = new URLSearchParams(window.location.search);
+                const urlParams = new URLSearchParams(window.location.search);
                 // FIX 1: Provide fallback default matches if the page is opened without URL parameters.
-                const queryWeek = params.get('week') || "1";
-                const queryHome = params.get('home') || "LFC";
-                const queryAway = params.get('away') || "SKS";
-
-                if (!queryWeek || !queryHome || !queryAway) {
-                    throw new Error("Match missing from link. Please select a match from the schedule.");
-                }
+                const queryHome = urlParams.get('home') || "LFC";
+                const queryAway = urlParams.get('away') || "SKS";
+                const queryWeek = urlParams.get('week') || "1";
 
                 const [scheduleRaw, rosterRaw, standingsRaw, teamsRaw] = await Promise.all([
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                let teamsMap = {};
-                teamsRaw.forEach((row, i) => {
-                    if (i === 0 || !row || !row[0]) return;
-                    teamsMap[row[1].trim().toUpperCase()] = {
-                        name: row[0].trim(),
-                        code: row[1].trim().toUpperCase(),
-                        manager: row[2] ? row[2].trim() : 'TBA',
-                        hex: row[3] ? row[3].trim() : '#475569',
-                        rank: 'N/A', points: 0
-                    };
-                });
-
-                standingsRaw.forEach((row, i) => {
-                    if (i === 0 || !row || !row[1]) return;
-                    let tName = row[1].trim().toUpperCase();
-                    let tCode = null;
-                    Object.keys(teamsMap).forEach(k => { if(teamsMap[k].name.toUpperCase() === tName) tCode = k; });
-                    if(tCode) {
-                        teamsMap[tCode].rank = row[0];
-                        teamsMap[tCode].points = parseInt(row[9]) || 0;
+                let targetMatch = null;
+                for (let i = 1; i < scheduleRaw.length; i++) {
+                    const row = scheduleRaw[i];
+                    if (row.length < 7) continue;
+                    const isCorrectWeek = row[0] == queryWeek;
+                    const homeStr = (row[4]||"").toUpperCase();
+                    const awayStr = (row[6]||"").toUpperCase();
+                    
+                    if (isCorrectWeek && homeStr.includes(queryHome) && awayStr.includes(queryAway)) {
+                        targetMatch = row;
+                        break;
                     }
-                });
+                }
 
-                let targetMatch = scheduleRaw.find(row => {
-                    if(!row || !row[4] || !row[6]) return false;
-                    const rWeek = row[0].trim();
-                    const rHomeName = row[4].trim().toUpperCase();
-                    const rAwayName = row[6].trim().toUpperCase();
-                    
-                    let rHomeCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === rHomeName) || rHomeName;
-                    let rAwayCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === rAwayName) || rAwayName;
-                    
-                    return (rWeek === queryWeek && rHomeCode === queryHome && rAwayCode === queryAway);
-                });
+                if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
 
-                if (!targetMatch) throw new Error("Match not found in system.");
+                let teamMetaMap = {};
+                for (let i = 1; i < teamsRaw.length; i++) {
+                    if (teamsRaw[i][0]) {
+                        const fullName = teamsRaw[i][0];
+                        const code = (teamsRaw[i][1] || fullName.substring(0,3)).toUpperCase();
+                        const mgr = teamsRaw[i][2] || "Manager";
+                        const hex = teamsRaw[i][3] || "#9ca3af";
+                        teamMetaMap[code] = { name: fullName, code, mgr, hex };
+                    }
+                }
 
-                const hCode = queryHome;
-                const aCode = queryAway;
-                const hMeta = teamsMap[hCode] || { name: targetMatch[4], hex: '#3b82f6', manager: 'TBA', rank: 'N/A', points: 0 };
-                const aMeta = teamsMap[aCode] || { name: targetMatch[6], hex: '#ef4444', manager: 'TBA', rank: 'N/A', points: 0 };
-                
-                const hLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].primary) ? TEAM_ASSETS[hCode].primary : '';
-                const aLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].primary) ? TEAM_ASSETS[aCode].primary : '';
-                const hSecLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].secondary) ? TEAM_ASSETS[hCode].secondary : '';
-                const aSecLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].secondary) ? TEAM_ASSETS[aCode].secondary : '';
+                let rankMap = {};
+                for (let i = 1; i < standingsRaw.length; i++) {
+                    const rName = standingsRaw[i][1];
+                    if (rName) {
+                        for (const [tCode, tObj] of Object.entries(teamMetaMap)) {
+                            if (tObj.name.toUpperCase() === rName.toUpperCase() || tCode === rName.toUpperCase()) {
+                                rankMap[tCode] = standingsRaw[i][0];
+                            }
+                        }
+                    }
+                }
 
-                const rawStatus = (targetMatch[3] || '').trim().toUpperCase();
-                const matchDateStr = targetMatch[1] ? targetMatch[1].trim() : '';
-                const matchTimeStr = targetMatch[2] ? targetMatch[2].trim() : '';
+                const hMeta = teamMetaMap[queryHome] || { name: targetMatch[4], code: queryHome, mgr: "TBA", hex: "#4ade80" };
+                const aMeta = teamMetaMap[queryAway] || { name: targetMatch[6], code: queryAway, mgr: "TBA", hex: "#f87171" };
+
+                const hRank = rankMap[queryHome] || "-";
+                const aRank = rankMap[queryAway] || "-";
+
+                const matchStatusRaw = (targetMatch[3] || "").toUpperCase();
+                const matchDateStr = targetMatch[1] || "";
+                const matchTimeStr = targetMatch[2] || "";
                 
                 let isScheduledTimeReached = true;
-                if (matchDateStr && matchTimeStr) {
-                    const scheduledDateTime = new Date(`${matchDateStr} ${matchTimeStr}`);
-                    if (!isNaN(scheduledDateTime.getTime())) {
-                        isScheduledTimeReached = new Date() >= scheduledDateTime;
+                if (matchDateStr && matchDateStr.toLowerCase() !== 'tba') {
+                    const datePattern = /(\d{1,4})[-/](\d{1,2})[-/](\d{1,4})/;
+                    const match = matchDateStr.match(datePattern);
+                    if (match) {
+                        const day = parseInt(match[1], 10);
+                        const month = parseInt(match[2], 10);
+                        let hours = 0, minutes = 0;
+                        if (matchTimeStr && matchTimeStr.includes(':')) {
+                            const timeSegments = matchTimeStr.split(':');
+                            hours = parseInt(timeSegments[0].trim(), 10);
+                            minutes = parseInt(timeSegments[1].trim(), 10);
+                        }
+                        const scheduledDateTime = new Date(2026, month - 1, day, hours, minutes);
+                        if (!isNaN(scheduledDateTime.getTime())) {
+                            isScheduledTimeReached = new Date() >= scheduledDateTime;
+                        }
                     }
                 }
 
-                let isFinalised = rawStatus.includes("FINALISED") && isScheduledTimeReached;
-                let isLive = rawStatus.includes("ACTIVE") || rawStatus.includes("LIVE");
-                
-                let statusClass = 'upcoming';
-                let displayStatus = 'UPCOMING';
-
-                if (isFinalised) {
-                    statusClass = 'finalised';
-                    displayStatus = 'FINAL';
-                } else if (isLive) {
-                    statusClass = 'live';
-                    displayStatus = 'LIVE';
+                let isFinalised = false, isLive = false, isUpcoming = false;
+                if (matchStatusRaw.includes("CONFIRM")) {
+                    isUpcoming = true;
+                } else if (matchStatusRaw === "FINALISED") {
+                    if (isScheduledTimeReached) isFinalised = true;
+                    else isUpcoming = true;
+                } else {
+                    if (isScheduledTimeReached) isLive = true;
+                    else isUpcoming = true;
                 }
 
-                let ytEmbed = parseYouTubeEmbed(targetMatch[8]);
+                let finalHomeScore = "?", finalAwayScore = "?";
+                if (isFinalised) {
+                    finalHomeScore = targetMatch[5] !== "" ? targetMatch[5] : "0";
+                    finalAwayScore = targetMatch[7] !== "" ? targetMatch[7] : "0";
+                }
 
                 let hRoster = [], aRoster = [];
                 let hStats = { off:0, def:0, count:0 }, aStats = { off:0, def:0, count:0 };
 
-                rosterRaw.forEach((row, i) => {
-                    if (i === 0 || !row || !row[0]) return;
-                    let assigned = row[3] ? row[3].trim().toUpperCase() : '';
-                    if(!assigned) return;
-
-                    let regexVal = /\((\d+)\)/;
-                    let offStr = row[4] ? row[4].trim() : '';
-                    let defStr = row[5] ? row[5].trim() : '';
-                    let off = offStr.match(regexVal) ? parseInt(offStr.match(regexVal)[1]) : 0;
-                    let def = defStr.match(regexVal) ? parseInt(defStr.match(regexVal)[1]) : 0;
+                for (let i = 1; i < rosterRaw.length; i++) {
+                    const row = rosterRaw[i];
+                    if (!row[0]) continue;
+                    const assigned = (row[1] || "").toUpperCase();
+                    const off = parseInt(row[3])||0;
+                    const def = parseInt(row[4])||0;
+                    const pObj = { name: row[0], num: row[2], off, def, totalScore: off+def, events: [], isCaptain: false };
                     
-                    let posCode = 'DEF';
-                    if(row[2]) {
-                        let m = row[2].match(/\[(.*?)\]/);
-                        if(m) posCode = m[1].toUpperCase();
-                    }
-
-                    let rawNumStr = String(row[0]).trim();
-                    let slicedNum = rawNumStr.length > 2 ? rawNumStr.slice(-2) : rawNumStr;
-
-                    let pObj = {
-                        num: slicedNum,
-                        name: row[1],
-                        pos: posCode,
-                        team: assigned,
-                        off: off,
-                        def: def,
-                        goals: 0,
-                        isCaptain: false,
-                        totalScore: off + def
-                    };
-
-                    if(assigned.includes(hMeta.name.toUpperCase())) { hRoster.push(pObj); hStats.off+=off; hStats.def+=def; hStats.count++; }
-                    else if(assigned.includes(aMeta.name.toUpperCase())) { aRoster.push(pObj); aStats.off+=off; aStats.def+=def; aStats.count++; }
-                });
+                    if (assigned.includes(hMeta.name.toUpperCase())) { hRoster.push(pObj); hStats.off+=off; hStats.def+=def; hStats.count++; }
+                    if (assigned.includes(aMeta.name.toUpperCase())) { aRoster.push(pObj); aStats.off+=off; aStats.def+=def; aStats.count++; }
+                }
 
                 if (hRoster.length > 0) hRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, hRoster[0]).isCaptain = true;
                 if (aRoster.length > 0) aRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, aRoster[0]).isCaptain = true;
 
-                let matchEvents = [];
-                if (isFinalised || isLive) {
-                    for(let g=0; g<6; g++) {
-                        let minCol = 9 + (g*2);
-                        let idCol = 10 + (g*2);
-                        if(targetMatch[minCol] && targetMatch[idCol]) {
-                            let mn = parseInt(targetMatch[minCol].trim());
-                            let pIdRaw = targetMatch[idCol].trim();
-                            let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
-                            if(!isNaN(mn) && pId) matchEvents.push({ min: mn, id: pId });
-                        }
+                let allEvents = [];
+                if (isFinalised && targetMatch.length > 9) {
+                    const eventsCell = targetMatch[9];
+                    if (eventsCell && eventsCell.trim() !== "") {
+                        eventsCell.split(';').forEach(evtStr => {
+                            if (!evtStr.trim()) return;
+                            const matchStr = evtStr.match(/(\d+)'\s*([^:]+):\s*(.+)/);
+                            if (matchStr) {
+                                const min = matchStr[1], type = matchStr[2].trim(), pNameRaw = matchStr[3].trim().toUpperCase();
+                                
+                                let teamSide = 'home';
+                                let matchedPlayer = hRoster.find(p => p.name.toUpperCase().includes(pNameRaw));
+                                if (!matchedPlayer) {
+                                    matchedPlayer = aRoster.find(p => p.name.toUpperCase().includes(pNameRaw));
+                                    if (matchedPlayer) teamSide = 'away';
+                                }
+                                
+                                if (matchedPlayer) {
+                                    matchedPlayer.events.push({ min, type });
+                                    allEvents.push({ min: parseInt(min), type, player: matchedPlayer.name, teamSide });
+                                }
+                            }
+                        });
+                        allEvents.sort((a,b) => a.min - b.min);
                     }
-                    matchEvents.sort((a,b) => a.min - b.min);
                 }
 
-                let allPlayers = [...hRoster, ...aRoster];
-                let eventsHtml = '';
+                // FIX 2: Corrected logic for default team stats to prevent 0 scores from defaulting to 1 incorrectly.
+                const hOff = hStats.count ? (hStats.off / hStats.count) : 0.0001;
+                const hDef = hStats.count ? (hStats.def / hStats.count) : 0.0001;
+                const aOff = aStats.count ? (aStats.off / aStats.count) : 0.0001;
+                const aDef = aStats.count ? (aStats.def / aStats.count) : 0.0001;
                 
-                if (!isFinalised && !isLive) {
-                    eventsHtml = `<div style="text-align:center; color:var(--text-muted); font-size:0.9rem; padding:30px 20px; font-style: italic;">Match has not started yet. Timeline updates live during kickoff.</div>`;
-                } else if(matchEvents.length === 0) {
-                    eventsHtml = `<div style="text-align:center; color:var(--text-muted); font-size:0.9rem; padding:30px 20px; font-style: italic;">No goals recorded for this match.</div>`;
-                } else {
-                    eventsHtml = matchEvents.map(ev => {
-                        let p = allPlayers.find(pl => pl.num === ev.id);
-                        if(p) p.goals++;
-                        
-                        let isHome = p ? hRoster.includes(p) : true;
-                        let teamHex = isHome ? hMeta.hex : aMeta.hex;
-                        let textColor = getContrastYIQ(teamHex);
-                        let pName = p ? p.name : `Player #${ev.id}`;
-
-                        return `
-                            <div class="timeline-event ${isHome ? 'home-event' : 'away-event'}">
-                                <div class="timeline-half">
-                                    <span class="event-minute" style="background: linear-gradient(135deg, ${teamHex}, rgba(0,0,0,0.4)); color:${textColor}; border-color:${teamHex};">${ev.min}'</span>
-                                    <span class="event-player">${pName}</span>
-                                </div>
-                                <div class="timeline-center-icon">⚽</div>
-                                <div class="timeline-empty-half"></div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                // FIX 2: Corrected logic for default team stats to prevent 0 scores from defaulting to 1 
-                const hOff = hStats.count ? Math.max(hStats.off / hStats.count, 0.1) : 1;
-                const hDef = hStats.count ? Math.max(hStats.def / hStats.count, 0.1) : 1;
-                const aOff = aStats.count ? Math.max(aStats.off / aStats.count, 0.1) : 1;
-                const aDef = aStats.count ? Math.max(aStats.def / aStats.count, 0.1) : 1;
+                const lambdaHome = hOff / aDef;
+                const lambdaAway = aOff / hDef;
                 
-                const lambdaHome = (hOff / aDef) * 1.3 * 1.1; 
-                const lambdaAway = (aOff / hDef) * 1.3;
-                
-                function poisson(k, lambda) {
-                    let kFact = 1;
-                    for (let i = 1; i <= k; i++) kFact *= i;
-                    return (Math.pow(lambda, k) * Math.exp(-lambda)) / kFact;
-                }
+                function poisson(k, l) { return (Math.pow(l, k) * Math.exp(-l)) / factorial(k); }
+                function factorial(n) { return n <= 1 ? 1 : n * factorial(n - 1); }
                 
                 let pHomeRaw = 0, pDrawRaw = 0, pAwayRaw = 0;
-                
-                for (let hGoals = 0; hGoals <= 5; hGoals++) {
-                    for (let aGoals = 0; aGoals <= 5; aGoals++) {
-                        let prob = poisson(hGoals, lambdaHome) * poisson(aGoals, lambdaAway);
-                        if (hGoals > aGoals) pHomeRaw += prob;
-                        else if (hGoals === aGoals) pDrawRaw += prob;
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < 6; j++) {
+                        const prob = poisson(i, lambdaHome) * poisson(j, lambdaAway);
+                        if (i > j) pHomeRaw += prob;
+                        else if (i === j) pDrawRaw += prob;
                         else pAwayRaw += prob;
                     }
                 }
+                let pSum = pHomeRaw + pDrawRaw + pAwayRaw;
+                if(pSum === 0) pSum = 1;
+                pHomeRaw /= pSum; pDrawRaw /= pSum; pAwayRaw /= pSum;
                 
                 let pHome = Math.round(pHomeRaw * 100);
                 let pDraw = Math.round(pDrawRaw * 100);
                 let pAway = Math.round(pAwayRaw * 100);
-                
                 let diff = 100 - (pHome + pDraw + pAway);
                 pDraw += diff;
 
+                const hLogoAssets = TEAM_ASSETS[queryHome] || { primary: '', secondary: '' };
+                const aLogoAssets = TEAM_ASSETS[queryAway] || { primary: '', secondary: '' };
+                
+                const hLogoUrl = hLogoAssets.primary;
+                const aLogoUrl = aLogoAssets.primary;
+                const hSecLogoUrl = hLogoAssets.secondary;
+                const aSecLogoUrl = aLogoAssets.secondary;
+
+                let mediaHTML = "";
+                const ytEmbed = parseYouTubeEmbed(targetMatch[8]);
+                if (ytEmbed) {
+                    mediaHTML = `
+                        <div class="dash-widget" style="padding: 24px;">
+                            <div class="section-title" style="border-bottom: none; margin-bottom: 20px;">Match Replay</div>
+                            <div class="media-player-wrapper">
+                                <iframe src="${ytEmbed}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            </div>
+                        </div>`;
+                }
+
+                function buildPitchNodes(roster, isHome) {
+                    if (roster.length === 0) return `<div style="color:var(--text-muted); font-size:0.8rem;">No roster</div>`;
+                    const cap = roster.find(p => p.isCaptain) || roster[0];
+                    const fielders = roster.filter(p => p !== cap);
+                    
+                    const createNode = (p) => {
+                        const hex = isHome ? hMeta.hex : aMeta.hex;
+                        const fg = getContrastYIQ(hex);
+                        const grad = getRadialGradient(hex);
+                        
+                        let badgeHTML = `<div class="player-badge" style="background: ${grad}; color: ${fg};">${p.num || '-'}</div>`;
+                        if (p.isCaptain) badgeHTML += `<div class="captain-icon">C</div>`;
+                        
+                        const goals = p.events.filter(e => e.type === 'Goal');
+                        if (goals.length > 0) {
+                            let gHTML = `<div class="goal-stack">`;
+                            goals.forEach(() => gHTML += `<div class="goal-icon">⚽</div>`);
+                            gHTML += `</div>`;
+                            badgeHTML += gHTML;
+                        }
+                        
+                        return `
+                            <div class="player-node">
+                                <div style="position:relative;">${badgeHTML}</div>
+                                <div class="player-name-tag">${p.name}</div>
+                            </div>
+                        `;
+                    };
+
+                    let halfHtml = `<div class="pitch-column-band">${createNode(cap)}</div>`;
+                    if (fielders.length > 0) {
+                        halfHtml += `<div class="pitch-column-band">`;
+                        fielders.forEach(f => halfHtml += createNode(f));
+                        halfHtml += `</div>`;
+                    }
+                    
+                    return halfHtml;
+                }
+
+                function buildTimelineEvents() {
+                    if (!isFinalised || allEvents.length === 0) {
+                        return `<div style="text-align:center; color: var(--text-muted); font-size: 0.9rem; padding: 20px 0;">No major events recorded.</div>`;
+                    }
+                    let html = `<div class="timeline-container"><div class="timeline-line"></div>`;
+                    allEvents.forEach(evt => {
+                        const isHome = evt.teamSide === 'home';
+                        const cls = isHome ? 'home-event' : 'away-event';
+                        const icon = evt.type === 'Goal' ? '⚽' : '👟';
+                        html += `
+                            <div class="timeline-event ${cls}">
+                                <div class="timeline-half">
+                                    <div class="event-minute">${evt.min}'</div>
+                                    <div class="event-player">${evt.player} <span style="color:var(--text-muted); font-size: 0.8rem;">(${evt.type})</span></div>
+                                </div>
+                                <div class="timeline-center-icon">${icon}</div>
+                                <div class="timeline-empty-half"></div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                    return html;
+                }
+
+                function buildRosterTable(roster) {
+                    if (roster.length === 0) return `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Awaiting team sheet</td></tr>`;
+                    let rHtml = '';
+                    roster.forEach(p => {
+                        const icon = p.isCaptain ? '<span style="color:#f59e0b; margin-left:6px; font-size:0.8rem;">(C)</span>' : '';
+                        rHtml += `
+                            <tr>
+                                <td>${p.num || '-'}</td>
+                                <td>${p.name}${icon}</td>
+                                <td>${p.off}</td>
+                                <td>${p.def}</td>
+                            </tr>
+                        `;
+                    });
+                    return rHtml;
+                }
+
+                // FIX 3: Removed backslash escaping in template literal so HTML is rendered correctly
                 document.getElementById('app-mount').innerHTML = `
                     <div class="dash-widget scoreboard-outer-card" style="--h-color: ${hMeta.hex}; --a-color: ${aMeta.hex}; border-left: 4px solid ${hMeta.hex}; border-right: 4px solid ${aMeta.hex};">
                         
-                       <div class="bg-logo-wrapper">
-                        ${hSecLogoUrl ? `<img src="${hSecLogoUrl}" class="sec-logo-watermark home-wm" onerror="this.style.display='none';">` : ''}
-                        ${aSecLogoUrl ? `<img src="${aSecLogoUrl}" class="sec-logo-watermark away-wm" onerror="this.style.display='none';">` : ''}
-                    </div>
-                        
-                        <div class="team-side home-side">
-                            <img src="${hLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">
-                            <div>
-                                <h2 class="team-name-lg">${hMeta.name}</h2>
-                                <p class="team-manager-sm">${hMeta.manager}</p>
-                            </div>
-                            <div class="team-ladder-rank">RANK: ${hMeta.rank}</div>
+                        <div class="bg-logo-wrapper">
+                            ${hSecLogoUrl ? `<img src="${hSecLogoUrl}" class="sec-logo-watermark home-wm" onerror="this.style.display='none';">` : ''}
+                            ${aSecLogoUrl ? `<img src="${aSecLogoUrl}" class="sec-logo-watermark away-wm" onerror="this.style.display='none';">` : ''}
+                        </div>
+
+                        <div class="team-side">
+                            ${hLogoUrl ? `<img src="${hLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">` : `<div class="team-logo-lg" style="background: rgba(255,255,255,0.05); border-radius: 50%;"></div>`}
+                            <h2 class="team-name-lg">${hMeta.name}</h2>
+                            <div class="team-manager-sm">${hMeta.mgr}</div>
+                            <div class="team-ladder-rank">Rank ${hRank}</div>
                         </div>
 
                         <div class="score-center-block">
-                            <div class="match-meta-badge ${statusClass}">${displayStatus}</div>
-                            <div class="score-row">${(isFinalised || isLive) ? (targetMatch[5] || '0') : '-'} <span style="color:var(--text-muted); opacity: 0.5;">:</span> ${(isFinalised || isLive) ? (targetMatch[7] || '0') : '-'}</div>
-                            <div class="match-time-label">Week ${queryWeek.toUpperCase()} &bull; ${targetMatch[1] || 'TBA'} &bull; ${targetMatch[2] || 'TBA'}</div>
-                        </div>
-
-                        <div class="team-side away-side">
-                            <img src="${aLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">
-                            <div>
-                                <h2 class="team-name-lg">${aMeta.name}</h2>
-                                <p class="team-manager-sm">${aMeta.manager}</p>
+                            <div class="match-meta-badge ${isFinalised ? 'finalised' : (isLive ? 'live' : 'upcoming')}">
+                                ${isFinalised ? 'Full Time' : (isLive ? 'Match Processing' : 'Upcoming Fixture')}
                             </div>
-                            <div class="team-ladder-rank">RANK: ${aMeta.rank}</div>
+                            <div class="score-row">${finalHomeScore} - ${finalAwayScore}</div>
+                            <div class="match-time-label">Week ${queryWeek} &bull; ${matchDateStr} ${matchTimeStr ? '&bull; ' + matchTimeStr : ''}</div>
+                        </div>
+
+                        <div class="team-side">
+                            ${aLogoUrl ? `<img src="${aLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">` : `<div class="team-logo-lg" style="background: rgba(255,255,255,0.05); border-radius: 50%;"></div>`}
+                            <h2 class="team-name-lg">${aMeta.name}</h2>
+                            <div class="team-manager-sm">${aMeta.mgr}</div>
+                            <div class="team-ladder-rank">Rank ${aRank}</div>
                         </div>
                     </div>
 
-                    <div class="dash-widget">
-                        <div class="section-title">Win Chance</div>
-                        <div class="predictor-labels">
-                            <span>${hCode} (${pHome}%)</span>
-                            <span>DRAW (${pDraw}%)</span>
-                            <span>${aCode} (${pAway}%)</span>
-                        </div>
-                        <div class="predictor-track-combined">
-                            <div class="predictor-segment" style="width: ${pHome}%; background: linear-gradient(90deg, ${hMeta.hex}, rgba(255,255,255,0.2));"></div>
-                            <div class="predictor-segment" style="width: ${pDraw}%; background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));"></div>
-                            <div class="predictor-segment" style="width: ${pAway}%; background: linear-gradient(90deg, rgba(255,255,255,0.2), ${aMeta.hex});"></div>
-                        </div>
-                    </div>
+                    ${mediaHTML}
 
-                    ${ytEmbed ? `
-                    <div class="dash-widget" style="padding: 16px;">
-                        <div class="media-player-wrapper"><iframe src="${ytEmbed}" allowfullscreen></iframe></div>
-                    </div>` : ''}
+                    <div class="dash-widget" style="padding: 0; display: flex; flex-direction: column;">
+                        <div style="padding: 24px 32px 16px;">
+                            <div class="predictor-labels">
+                                <span>${hMeta.code} Win (${pHome}%)</span>
+                                <span>Draw (${pDraw}%)</span>
+                                <span>${aMeta.code} Win (${pAway}%)</span>
+                            </div>
+                            <div class="predictor-track-combined">
+                                <div class="predictor-segment" style="width: ${pHome}%; background: ${hMeta.hex}; color: ${getContrastYIQ(hMeta.hex)}">${pHome}%</div>
+                                <div class="predictor-segment" style="width: ${pDraw}%; background: #4b5563;">${pDraw}%</div>
+                                <div class="predictor-segment" style="width: ${pAway}%; background: ${aMeta.hex}; color: ${getContrastYIQ(aMeta.hex)}">${pAway}%</div>
+                            </div>
+                        </div>
 
-                    <div class="field-grand-wrapper dash-widget" style="padding:0; border-radius: 28px;">
-                        <div class="pitch-container-horizontal">
-                            <div class="pitch-center-line-vert"></div>
-                            <div class="pitch-center-circle-middle"></div>
-                            <div class="pitch-center-spot"></div>
-                            <div class="pitch-penalty-box-left"></div>
-                            <div class="pitch-goal-box-left"></div>
-                            <div class="pitch-penalty-box-right"></div>
-                            <div class="pitch-goal-box-right"></div>
+                        <div class="field-grand-wrapper">
+                            <div class="pitch-container-horizontal">
+                                <div class="pitch-center-line-vert"></div>
+                                <div class="pitch-center-circle-middle"></div>
+                                <div class="pitch-center-spot"></div>
+                                <div class="pitch-penalty-box-left"></div>
+                                <div class="pitch-goal-box-left"></div>
+                                <div class="pitch-penalty-box-right"></div>
+                                <div class="pitch-goal-box-right"></div>
+                                
+                                <div class="pitch-team-half home-left-side">${buildPitchNodes(hRoster, true)}</div>
+                                <div class="pitch-team-half away-right-side">${buildPitchNodes(aRoster, false)}</div>
+                            </div>
                             
-                            <div class="pitch-team-half home-left-side">
-                                ${buildHorizontalPitchNodes(hRoster, hMeta.hex, getContrastYIQ(hMeta.hex), isFinalised || isLive)}
-                            </div>
-                            <div class="pitch-team-half away-right-side">
-                                ${buildHorizontalPitchNodes(aRoster, aMeta.hex, getContrastYIQ(aMeta.hex), isFinalised || isLive)}
-                            </div>
-                        </div>
-                        
-                        <div class="integrated-performance-hud">
-                            <div>
-                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.off/hStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.off/hStats.count)*10 : 0}%; background: linear-gradient(90deg, #059669, #34d399);"></div></div>
-                            </div>
-                            <div>
-                                <div class="stat-labels"><span>Offence Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.off/aStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.off/aStats.count)*10 : 0}%; background: linear-gradient(90deg, #059669, #34d399); margin-left: auto;"></div></div>
-                            </div>
-                            <div>
-                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${hStats.count ? Math.round(hStats.def/hStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${hStats.count ? (hStats.def/hStats.count)*10 : 0}%; background: linear-gradient(90deg, #2563eb, #60a5fa);"></div></div>
-                            </div>
-                            <div>
-                                <div class="stat-labels"><span>Defence Rating</span><span class="stat-val-highlight">${aStats.count ? Math.round(aStats.def/aStats.count*10)/10 : 0}</span></div>
-                                <div class="stat-split-track"><div style="width: ${aStats.count ? (aStats.def/aStats.count)*10 : 0}%; background: linear-gradient(90deg, #2563eb, #60a5fa); margin-left: auto;"></div></div>
+                            <div class="integrated-performance-hud">
+                                <div>
+                                    <div class="stat-labels"><span>Offensive Power</span> <span class="stat-val-highlight">${hStats.off} <span style="color:var(--text-muted); font-size:0.7rem;">vs</span> ${aStats.off}</span></div>
+                                    <div class="stat-split-track">
+                                        <div style="width: ${hStats.off === 0 && aStats.off === 0 ? 50 : (hStats.off / (hStats.off + aStats.off) * 100)}%; background: ${hMeta.hex};"></div>
+                                        <div style="width: ${hStats.off === 0 && aStats.off === 0 ? 50 : (aStats.off / (hStats.off + aStats.off) * 100)}%; background: ${aMeta.hex};"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="stat-labels"><span>Defensive Wall</span> <span class="stat-val-highlight">${hStats.def} <span style="color:var(--text-muted); font-size:0.7rem;">vs</span> ${aStats.def}</span></div>
+                                    <div class="stat-split-track">
+                                        <div style="width: ${hStats.def === 0 && aStats.def === 0 ? 50 : (hStats.def / (hStats.def + aStats.def) * 100)}%; background: ${hMeta.hex};"></div>
+                                        <div style="width: ${hStats.def === 0 && aStats.def === 0 ? 50 : (aStats.def / (hStats.def + aStats.def) * 100)}%; background: ${aMeta.hex};"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="dash-widget">
-                        <div class="section-title" style="text-align: center; border-bottom:0;">Match Timeline</div>
-                        <div class="timeline-container">
-                            <div class="timeline-line"></div>
-                            ${eventsHtml}
-                        </div>
+                    <div class="dash-widget" style="padding: 24px 32px;">
+                        <div class="section-title">Match Events</div>
+                        ${buildTimelineEvents()}
                     </div>
 
-                    <div class="dash-widget roster-lists">
-                        <div>
-                            <div class="section-title" style="color: ${hMeta.hex}; display:flex; align-items:center; gap:10px;">
-                                <div style="width:14px; height:14px; background: linear-gradient(135deg, ${hMeta.hex}, rgba(255,255,255,0.4)); border-radius:50%; box-shadow: 0 0 10px ${hMeta.hex};"></div> ${hCode} Lineup
+                    <div class="dash-widget" style="padding: 24px 32px;">
+                        <div class="section-title">Team Squads</div>
+                        <div class="roster-lists">
+                            <div>
+                                <h3 style="margin-top:0; font-size:1.1rem; border-left:4px solid ${hMeta.hex}; padding-left:10px;">${hMeta.name}</h3>
+                                <table class="roster-table">
+                                    <thead><tr><th>No</th><th>Player</th><th>ATK</th><th>DEF</th></tr></thead>
+                                    <tbody>${buildRosterTable(hRoster)}</tbody>
+                                </table>
                             </div>
-                            ${buildRosterTable(hRoster)}
-                        </div>
-                        <div>
-                            <div class="section-title" style="color: ${aMeta.hex}; display:flex; align-items:center; gap:10px;">
-                                <div style="width:14px; height:14px; background: linear-gradient(135deg, ${aMeta.hex}, rgba(255,255,255,0.4)); border-radius:50%; box-shadow: 0 0 10px ${aMeta.hex};"></div> ${aCode} Lineup
+                            <div>
+                                <h3 style="margin-top:0; font-size:1.1rem; border-left:4px solid ${aMeta.hex}; padding-left:10px;">${aMeta.name}</h3>
+                                <table class="roster-table">
+                                    <thead><tr><th>No</th><th>Player</th><th>ATK</th><th>DEF</th></tr></thead>
+                                    <tbody>${buildRosterTable(aRoster)}</tbody>
+                                </table>
                             </div>
-                            ${buildRosterTable(aRoster)}
                         </div>
                     </div>
                 `;
             } catch (err) {
-                // FIX 3: Removed backslash here so that real javascript errors display correctly
-                document.getElementById('app-mount').innerHTML = `
-                    <div style="text-align:center; padding: 60px 20px; color: #f87171; border: 1px dashed rgba(248, 113, 113, 0.3); border-radius: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(15, 17, 21, 0.5)); backdrop-filter: blur(8px);">
-                        <h3 style="margin-top:0;">Match Information Unavailable</h3>
-                        <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted);">${err.message}</p>
-                    </div>`;
                 console.error(err);
+                document.getElementById('app-mount').innerHTML = `
+                <div style="text-align:center; padding: 60px 20px; color: #f87171; border: 1px dashed rgba(248, 113, 113, 0.3); border-radius: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(15, 17, 21, 0.5)); backdrop-filter: blur(8px);">
+                    <h3 style="margin-top:0;">Match Information Unavailable</h3>
+                    <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted);">${err.message}</p>
+                </div>`;
             }
         }
 
