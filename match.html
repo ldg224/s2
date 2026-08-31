@@ -632,10 +632,10 @@
                 document.getElementById('app-mount').innerHTML = `
                     <div class="dash-widget scoreboard-outer-card" style="--h-color: ${hMeta.hex}; --a-color: ${aMeta.hex}; border-left: 4px solid ${hMeta.hex}; border-right: 4px solid ${aMeta.hex};">
                         
-                        <div class="bg-logo-wrapper">
-                            ${hSecLogoUrl ? \`<img src="\${hSecLogoUrl}" class="sec-logo-watermark home-wm" onerror="this.style.display='none';">\` : ''}
-                            ${aSecLogoUrl ? \`<img src="\${aSecLogoUrl}" class="sec-logo-watermark away-wm" onerror="this.style.display='none';">\` : ''}
-                        </div>
+                       <div class="bg-logo-wrapper">
+                        ${hSecLogoUrl ? `<img src="${hSecLogoUrl}" class="sec-logo-watermark home-wm" onerror="this.style.display='none';">` : ''}
+                        ${aSecLogoUrl ? `<img src="${aSecLogoUrl}" class="sec-logo-watermark away-wm" onerror="this.style.display='none';">` : ''}
+                    </div>
                         
                         <div class="team-side home-side">
                             <img src="${hLogoUrl}" class="team-logo-lg" onerror="this.style.display='none';">
