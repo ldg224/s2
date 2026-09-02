@@ -91,7 +91,6 @@
         
         .dash-widget:hover { border-color: rgba(255, 255, 255, 0.15); }
 
-        /* Scoreboard Header */
         .scoreboard-outer-card {
             display: grid; grid-template-columns: 1fr auto 1fr; 
             align-items: center; gap: 20px; padding: 40px 30px;
@@ -156,12 +155,10 @@
         .match-meta-badge.live { color: var(--status-live); box-shadow: 0 0 12px rgba(16, 185, 129, 0.25); }
         .match-time-label { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); }
 
-        /* Win Predictor Strip */
         .predictor-labels { display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 800; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; position: relative; z-index: 2; }
         .predictor-track-combined { height: 16px; background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(10,10,10,0.8)); border-radius: 8px; display: flex; overflow: hidden; border: 1px solid var(--glass-border); position: relative; z-index: 2; box-shadow: inset 0 2px 4px rgba(0,0,0,0.4); }
         .predictor-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.8); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        /* Media / Youtube */
         .media-player-wrapper {
             position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; z-index: 2;
         }
@@ -169,7 +166,6 @@
         
         .section-title { font-size: 1.05rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0 0 16px 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px; position: relative; z-index: 2;}
 
-        /* Pitch Overhaul */
         .field-grand-wrapper {
             background: linear-gradient(180deg, #0d2817 0%, #06150b 100%);
             border: 1px solid var(--glass-border); border-radius: 20px;
@@ -231,7 +227,6 @@
             border: 2px solid #000; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
         }
 
-        /* Stats Panel */
         .integrated-performance-hud {
             background: linear-gradient(180deg, rgba(12, 14, 18, 0.85), rgba(6, 7, 9, 0.95)); 
             border-top: 1px solid var(--glass-border);
@@ -241,7 +236,6 @@
         .stat-labels span.stat-val-highlight { color: var(--text-main); font-size: 0.9rem; font-weight: 900; }
         .stat-split-track { height: 10px; background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(20,20,20,0.5)); border-radius: 5px; display: flex; overflow: hidden; margin-top: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
 
-        /* Events Timeline */
         .timeline-container { position: relative; padding: 20px 0; z-index: 2; }
         .timeline-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, transparent, var(--glass-border) 10%, var(--glass-border) 90%, transparent); transform: translateX(-50%); }
         .timeline-event { display: flex; width: 100%; justify-content: space-between; align-items: center; margin-bottom: 24px; position: relative; z-index: 2; }
@@ -266,7 +260,6 @@
         }
         .event-player { font-weight: 700; font-size: 0.95rem; }
 
-        /* Squad Roster Tables */
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; z-index: 2; }
         .roster-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; }
         .roster-table th { text-align: left; padding: 14px 10px; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -370,6 +363,98 @@
             });
         }
 
+        // --- NEW POISSON SYSTEM FUNCTIONS ---
+        function poissonProbability(k, lambda) {
+            return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+        }
+
+        function factorial(n) {
+            if (n <= 1) return 1;
+            let res = 1;
+            for (let i = 2; i <= n; i++) res *= i;
+            return res;
+        }
+
+        function resolveTeamMetrics(teamName, matchCsvData, sheetAverages, ladderData, totalTeams) {
+            const historicalMatches = matchCsvData.filter(m => m.home === teamName || m.away === teamName);
+            
+            if (historicalMatches.length >= 3) {
+                let scored = 0, conceded = 0;
+                historicalMatches.forEach(m => {
+                    if (m.home === teamName) { scored += m.homeScore; conceded += m.awayScore; }
+                    else { scored += m.awayScore; conceded += m.homeScore; }
+                });
+                return {
+                    avgScored: scored / historicalMatches.length,
+                    avgConceded: conceded / historicalMatches.length
+                };
+            }
+
+            if (sheetAverages[teamName] && sheetAverages[teamName].avgScored > 0) {
+                return {
+                    avgScored: sheetAverages[teamName].avgScored,
+                    avgConceded: sheetAverages[teamName].avgConceded
+                };
+            }
+
+            const rank = ladderData[teamName]?.rank || Math.ceil(totalTeams / 2);
+            const midPoint = (totalTeams + 1) / 2;
+            const rankMultiplier = 1.0 + ((midPoint - rank) / totalTeams) * 0.3; 
+
+            const baseline = sheetAverages._leagueBaseline || 1.5; 
+            return {
+                avgScored: baseline * rankMultiplier,
+                avgConceded: baseline * (2.0 - rankMultiplier)
+            };
+        }
+
+        function calculateExpectedPercentages(teamA, teamB, matchCsvData, sheetAverages, ladderData, maxScore = 10) {
+            const totalTeams = Object.keys(ladderData).length || 10;
+            let totalLeagueGoals = 0, totalLeagueMatches = 0;
+            matchCsvData.forEach(m => {
+                totalLeagueGoals += (m.homeScore + m.awayScore);
+                totalLeagueMatches += 2;
+            });
+            const leagueBaseline = totalLeagueMatches > 0 ? (totalLeagueGoals / totalLeagueMatches) : 1.5;
+            sheetAverages._leagueBaseline = leagueBaseline;
+
+            const statsA = resolveTeamMetrics(teamA, matchCsvData, sheetAverages, ladderData, totalTeams);
+            const statsB = resolveTeamMetrics(teamB, matchCsvData, sheetAverages, ladderData, totalTeams);
+
+            const attA = statsA.avgScored / leagueBaseline;
+            const defA = statsA.avgConceded / leagueBaseline;
+            const attB = statsB.avgScored / leagueBaseline;
+            const defB = statsB.avgConceded / leagueBaseline;
+
+            const lambdaA = Math.max(0.2, leagueBaseline * attA * defB);
+            const lambdaB = Math.max(0.2, leagueBaseline * attB * defA);
+
+            let winA = 0, winB = 0, draw = 0;
+            for (let i = 0; i <= maxScore; i++) {
+                for (let j = 0; j <= maxScore; j++) {
+                    const prob = poissonProbability(i, lambdaA) * poissonProbability(j, lambdaB);
+                    if (i > j) winA += prob;
+                    else if (j > i) winB += prob;
+                    else draw += prob;
+                }
+            }
+
+            const totalProb = winA + winB + draw;
+            const pA = Math.round((winA / totalProb) * 100);
+            const pB = Math.round((winB / totalProb) * 100);
+            let pD = Math.round((draw / totalProb) * 100);
+            pD += (100 - (pA + pB + pD)); // Ensure exact 100% allocation for UI consistency
+
+            return {
+                teamAWinPct: pA,
+                teamBWinPct: pB,
+                drawPct: pD,
+                expectedLambdaA: lambdaA,
+                expectedLambdaB: lambdaB
+            };
+        }
+        // --- END NEW POISSON SYSTEM FUNCTIONS ---
+
         async function bootApp() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -419,14 +504,47 @@
                 if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
 
                 let rankMap = {};
+                let ladderDataObj = {};
+                let sheetAverages = {};
+                
+                // Construct rankings and extrapolate sheet averages straight from the standings
                 for (let i = 1; i < standingsRaw.length; i++) {
                     const rName = standingsRaw[i][1];
                     if (rName) {
                         for (const [tCode, tObj] of Object.entries(teamMetaMap)) {
                             if (tObj.name.toUpperCase() === rName.toUpperCase() || tCode === rName.toUpperCase()) {
-                                rankMap[tCode] = standingsRaw[i][0];
+                                const parsedRank = parseInt(standingsRaw[i][0]) || 1;
+                                rankMap[tCode] = parsedRank;
+                                ladderDataObj[tCode] = { rank: parsedRank };
+                                
+                                const gp = parseInt(standingsRaw[i][2]) || 0;
+                                const gf = parseInt(standingsRaw[i][6]) || 0; // Assume col 6 is Goals For
+                                const ga = parseInt(standingsRaw[i][7]) || 0; // Assume col 7 is Goals Against
+                                
+                                if (gp > 0) {
+                                    sheetAverages[tCode] = {
+                                        avgScored: gf / gp,
+                                        avgConceded: ga / gp
+                                    };
+                                }
                             }
                         }
+                    }
+                }
+
+                // Aggregate Match History for the Poisson System
+                let matchCsvData = [];
+                for (let i = 1; i < scheduleRaw.length; i++) {
+                    const row = scheduleRaw[i];
+                    if (row.length < 7) continue;
+                    const status = (row[3] || "").toUpperCase();
+                    if (status === "FINALISED" && row[5] !== "" && row[7] !== "") {
+                        matchCsvData.push({
+                            home: resolveCode(row[4]),
+                            away: resolveCode(row[6]),
+                            homeScore: parseInt(row[5]) || 0,
+                            awayScore: parseInt(row[7]) || 0
+                        });
                     }
                 }
 
@@ -525,35 +643,13 @@
                     }
                 }
 
-                const hOff = hStats.count ? (hStats.off / hStats.count) : 0.0001;
-                const hDef = hStats.count ? (hStats.def / hStats.count) : 0.0001;
-                const aOff = aStats.count ? (aStats.off / aStats.count) : 0.0001;
-                const aDef = aStats.count ? (aStats.def / aStats.count) : 0.0001;
+                // Inject the updated Multi-Tier Poisson predictor logic
+                const totalTeamsCount = Object.keys(teamMetaMap).length || 10;
+                const predictedStats = calculateExpectedPercentages(queryHome, queryAway, matchCsvData, sheetAverages, ladderDataObj, 10);
                 
-                const lambdaHome = hOff / aDef;
-                const lambdaAway = aOff / hDef;
-                
-                function poisson(k, l) { return (Math.pow(l, k) * Math.exp(-l)) / factorial(k); }
-                function factorial(n) { return n <= 1 ? 1 : n * factorial(n - 1); }
-                
-                let pHomeRaw = 0, pDrawRaw = 0, pAwayRaw = 0;
-                for (let i = 0; i < 6; i++) {
-                    for (let j = 0; j < 6; j++) {
-                        const prob = poisson(i, lambdaHome) * poisson(j, lambdaAway);
-                        if (i > j) pHomeRaw += prob;
-                        else if (i === j) pDrawRaw += prob;
-                        else pAwayRaw += prob;
-                    }
-                }
-                let pSum = pHomeRaw + pDrawRaw + pAwayRaw;
-                if(pSum === 0) pSum = 1;
-                pHomeRaw /= pSum; pDrawRaw /= pSum; pAwayRaw /= pSum;
-                
-                let pHome = Math.round(pHomeRaw * 100);
-                let pDraw = Math.round(pDrawRaw * 100);
-                let pAway = Math.round(pAwayRaw * 100);
-                let diff = 100 - (pHome + pDraw + pAway);
-                pDraw += diff;
+                const pHome = predictedStats.teamAWinPct;
+                const pAway = predictedStats.teamBWinPct;
+                const pDraw = predictedStats.drawPct;
 
                 const hLogoAssets = TEAM_ASSETS[queryHome] || { primary: '', secondary: '' };
                 const aLogoAssets = TEAM_ASSETS[queryAway] || { primary: '', secondary: '' };
