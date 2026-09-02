@@ -163,7 +163,7 @@
 
         /* Media / Youtube */
         .media-player-wrapper {
-            position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; z-index: 2;
+            position: relative; width: 100%; padding-bottom: 56.25%; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2;
         }
         .media-player-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         
@@ -266,7 +266,8 @@
         }
         .event-player { font-weight: 700; font-size: 0.95rem; }
 
-        /* Squad Roster Tables */
+        /* Responsive Grids & Tables */
+        .two-col-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; z-index: 2; }
         .roster-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; position: relative; z-index: 2; }
         .roster-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9rem; }
         .roster-table th { text-align: left; padding: 14px 10px; color: var(--text-muted); border-bottom: 1px solid var(--glass-border); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -281,6 +282,7 @@
             .pitch-container-horizontal { min-width: 700px; }
             .integrated-performance-hud { padding: 20px; gap: 20px; }
             .roster-lists { grid-template-columns: 1fr; }
+            .two-col-grid { grid-template-columns: 1fr; gap: 24px; }
             .timeline-line { left: 24px; transform: none; }
             .timeline-event.home-event, .timeline-event.away-event { flex-direction: row; }
             .timeline-half { width: calc(100% - 40px); justify-content: flex-start !important; text-align: left !important; margin-left: 45px; }
@@ -471,6 +473,86 @@
         }
         // --- END POISSON SYSTEM FUNCTIONS ---
 
+        // --- NEW FEATURES (FORM & NEXT MATCH) ---
+        function getTeamMatches(teamName, allMatches, currentWeek) {
+            let past = [];
+            let future = [];
+            for (let i = 1; i < allMatches.length; i++) {
+                const row = allMatches[i];
+                if (!row || row.length < 7) continue;
+                
+                const w = row[0].trim();
+                const h = row[4].trim().toUpperCase();
+                const a = row[6].trim().toUpperCase();
+                const status = (row[3] || "").toUpperCase();
+                
+                if (h === teamName.toUpperCase() || a === teamName.toUpperCase()) {
+                    if (w === currentWeek) continue;
+                    
+                    let matchObj = {
+                        week: w, date: row[1], time: row[2],
+                        home: row[4].trim(), away: row[6].trim(),
+                        hScore: parseInt(row[5]), aScore: parseInt(row[7]),
+                        status: status
+                    };
+                    
+                    if (status.includes("FINALISED")) {
+                        past.push(matchObj);
+                    } else if (!status.includes("ACTIVE") && !status.includes("LIVE") && status !== "") {
+                        future.push(matchObj);
+                    }
+                }
+            }
+            return {
+                last5: past.slice(-5),
+                next: future.length > 0 ? future[0] : null
+            };
+        }
+
+        function buildFormHtml(matches, teamName) {
+            if (!matches || matches.length === 0) return `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem;">No recent matches</div>`;
+            return matches.map(m => {
+                let isHome = m.home.toUpperCase() === teamName.toUpperCase();
+                let teamScore = isHome ? m.hScore : m.aScore;
+                let oppScore = isHome ? m.aScore : m.hScore;
+                
+                let bg = '#4b5563'; // draw gray
+                if (teamScore > oppScore) bg = '#10b981'; // win green
+                else if (teamScore < oppScore) bg = '#ef4444'; // loss red
+                
+                return `
+                    <div style="display:flex; justify-content:center; align-items:center; gap: 12px; margin-bottom: 10px; font-size: 0.9rem;">
+                        <span style="flex:1; text-align:right; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.home}">${m.home}</span>
+                        <span style="background:${bg}; color:#fff; padding: 4px 10px; border-radius: 6px; font-weight:800; letter-spacing:1px; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${m.hScore} - ${m.aScore}</span>
+                        <span style="flex:1; text-align:left; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.away}">${m.away}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildNextMatchHtml(nextMatch, teamName, teamsMap) {
+            if (!nextMatch) return `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:16px;">No upcoming matches scheduled</div>`;
+            let isHome = nextMatch.home.toUpperCase() === teamName.toUpperCase();
+            let oppName = isHome ? nextMatch.away : nextMatch.home;
+            
+            let oppCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === oppName.toUpperCase()) || oppName;
+            let oppLogo = (TEAM_ASSETS[oppCode] && TEAM_ASSETS[oppCode].primary) ? TEAM_ASSETS[oppCode].primary : '';
+            
+            return `
+                <div style="display:flex; flex-direction:column; align-items:center; gap: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); padding: 16px; border-radius: 16px;">
+                    <div style="font-size:0.75rem; color:var(--text-muted); font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Week ${nextMatch.week}</div>
+                    <div style="display:flex; align-items:center; gap: 16px; width: 100%; justify-content: center;">
+                        ${oppLogo ? `<img src="${oppLogo}" style="width:45px; height:45px; object-fit:contain; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.4));" onerror="this.style.display='none';">` : ''}
+                        <div style="text-align:left;">
+                            <div style="font-weight:800; font-size:1.05rem;">vs ${oppName}</div>
+                            <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; margin-top:2px;">${nextMatch.date} &bull; ${nextMatch.time}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        // --- END NEW FEATURES ---
+
         function buildRosterTable(players) {
             if(!players || players.length === 0) return `<div style="font-size:0.85rem; color:var(--text-muted); font-style:italic; padding: 12px 0;">No players listed.</div>`;
             return `
@@ -622,6 +704,10 @@
                 const aLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].primary) ? TEAM_ASSETS[aCode].primary : '';
                 const hSecLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].secondary) ? TEAM_ASSETS[hCode].secondary : '';
                 const aSecLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].secondary) ? TEAM_ASSETS[aCode].secondary : '';
+
+                // Load Last 5 & Next Match Data
+                const hFormMatches = getTeamMatches(hMeta.name, scheduleRaw, queryWeek);
+                const aFormMatches = getTeamMatches(aMeta.name, scheduleRaw, queryWeek);
 
                 // --- ADVANCED SCHEDULED TIME LOCK REVEAL LOGIC ---
                 const rawStatus = (targetMatch[3] || '').trim().toUpperCase();
@@ -793,6 +879,32 @@
                         </div>
                     </div>
 
+                    <div class="dash-widget">
+                        <div class="section-title" style="text-align: center; border-bottom:0; margin-bottom: 24px;">Team Form (Last 5)</div>
+                        <div class="two-col-grid">
+                            <div>
+                                <div style="text-align:center; font-weight:800; color:${hMeta.hex}; margin-bottom:12px; font-size:1.1rem;">${hMeta.name}</div>
+                                ${buildFormHtml(hFormMatches.last5, hMeta.name)}
+                            </div>
+                            <div>
+                                <div style="text-align:center; font-weight:800; color:${aMeta.hex}; margin-bottom:12px; font-size:1.1rem;">${aMeta.name}</div>
+                                ${buildFormHtml(aFormMatches.last5, aMeta.name)}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dash-widget">
+                        <div class="section-title" style="text-align: center; border-bottom:0; margin-bottom: 20px;">Next Match</div>
+                        <div class="two-col-grid">
+                            <div>
+                                ${buildNextMatchHtml(hFormMatches.next, hMeta.name, teamsMap)}
+                            </div>
+                            <div>
+                                ${buildNextMatchHtml(aFormMatches.next, aMeta.name, teamsMap)}
+                            </div>
+                        </div>
+                    </div>
+
                   ${!isFinalised ? `
 <div class="dash-widget">
     <div class="section-title">Win Chance</div>
@@ -810,8 +922,9 @@
 ` : ''}
 
                     ${ytEmbed ? `
-                    <div class="dash-widget" style="padding: 16px;">
-                        <div class="media-player-wrapper"><iframe src="${ytEmbed}" allowfullscreen></iframe></div>
+                    <div class="dash-widget" style="padding: 24px;">
+                        <div class="section-title">Video Review</div>
+                        <div class="media-player-wrapper" style="margin-bottom:0;"><iframe src="${ytEmbed}" allowfullscreen></iframe></div>
                     </div>` : ''}
 
                     <div class="field-grand-wrapper dash-widget" style="padding:0; border-radius: 28px;">
