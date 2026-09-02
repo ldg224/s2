@@ -373,7 +373,6 @@
         async function bootApp() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
-                // FIX 1: Provide fallback default matches if the page is opened without URL parameters.
                 const queryHome = urlParams.get('home') || "LFC";
                 const queryAway = urlParams.get('away') || "SKS";
                 const queryWeek = urlParams.get('week') || "1";
@@ -383,41 +382,41 @@
                 ]);
 
                 let teamMetaMap = {};
-for (let i = 1; i < teamsRaw.length; i++) {
-    if (teamsRaw[i][0]) {
-        const fullName = teamsRaw[i][0];
-        const code = (teamsRaw[i][1] || fullName.substring(0,3)).toUpperCase().trim();
-        const mgr = teamsRaw[i][2] || "Manager";
-        const hex = teamsRaw[i][3] || "#9ca3af";
-        teamMetaMap[code] = { name: fullName, code, mgr, hex };
-        teamMetaMap[fullName.toUpperCase().trim()] = { name: fullName, code, mgr, hex };
-    }
-}
+                for (let i = 1; i < teamsRaw.length; i++) {
+                    if (teamsRaw[i][0]) {
+                        const fullName = teamsRaw[i][0];
+                        const code = (teamsRaw[i][1] || fullName.substring(0,3)).toUpperCase().trim();
+                        const mgr = teamsRaw[i][2] || "Manager";
+                        const hex = teamsRaw[i][3] || "#9ca3af";
+                        teamMetaMap[code] = { name: fullName, code, mgr, hex };
+                        teamMetaMap[fullName.toUpperCase().trim()] = { name: fullName, code, mgr, hex };
+                    }
+                }
 
-function resolveCode(str) {
-    if (!str) return '';
-    const clean = str.toUpperCase().trim();
-    if (teamMetaMap[clean]) return teamMetaMap[clean].code;
-    return clean.length <= 3 ? clean : clean.slice(0, 3);
-}
+                function resolveCode(str) {
+                    if (!str) return '';
+                    const clean = str.toUpperCase().trim();
+                    if (teamMetaMap[clean]) return teamMetaMap[clean].code;
+                    return clean.length <= 3 ? clean : clean.slice(0, 3);
+                }
 
-let targetMatch = null;
-for (let i = 1; i < scheduleRaw.length; i++) {
-    const row = scheduleRaw[i];
-    if (row.length < 7) continue;
-    
-    const rowWeek = parseInt(row[0], 10);
-    const targetWeek = parseInt(queryWeek, 10);
-    const homeCode = resolveCode(row[4]);
-    const awayCode = resolveCode(row[6]);
-    
-    if (rowWeek === targetWeek && homeCode === queryHome.toUpperCase() && awayCode === queryAway.toUpperCase()) {
-        targetMatch = row;
-        break;
-    }
-}
+                let targetMatch = null;
+                for (let i = 1; i < scheduleRaw.length; i++) {
+                    const row = scheduleRaw[i];
+                    if (row.length < 7) continue;
+                    
+                    const rowWeek = (row[0] || '').toString().trim().toUpperCase();
+                    const targetWeek = queryWeek.toString().trim().toUpperCase();
+                    const homeCode = resolveCode(row[4]);
+                    const awayCode = resolveCode(row[6]);
+                    
+                    if (rowWeek === targetWeek && homeCode === queryHome.toUpperCase() && awayCode === queryAway.toUpperCase()) {
+                        targetMatch = row;
+                        break;
+                    }
+                }
 
-if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
+                if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
 
                 let rankMap = {};
                 for (let i = 1; i < standingsRaw.length; i++) {
@@ -481,20 +480,19 @@ if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome
                 let hRoster = [], aRoster = [];
                 let hStats = { off:0, def:0, count:0 }, aStats = { off:0, def:0, count:0 };
 
-for (let i = 1; i < rosterRaw.length; i++) {
-    const row = rosterRaw[i];
-    if (!row[0]) continue;
-    const assigned = (row[1] || "").toUpperCase().trim();
-    const off = parseInt(row[3]) || 0;
-    const def = parseInt(row[4]) || 0;
-    const pObj = { name: row[0], num: row[2], off, def, totalScore: off + def, events: [], isCaptain: false };
-    
-    const isHome = assigned.includes(hMeta.name.toUpperCase()) || assigned.includes(hMeta.code.toUpperCase());
-    const isAway = assigned.includes(aMeta.name.toUpperCase()) || assigned.includes(aMeta.code.toUpperCase());
+                for (let i = 1; i < rosterRaw.length; i++) {
+                    const row = rosterRaw[i];
+                    if (!row[0]) continue;
+                    const assigned = (row[1] || "").toUpperCase().trim();
+                    const off = parseInt(row[3]) || 0;
+                    const def = parseInt(row[4]) || 0;
+                    const pObj = { name: row[0], num: row[2], off, def, totalScore: off + def, events: [], isCaptain: false };
+                    
+                    const isHome = assigned.includes(hMeta.name.toUpperCase()) || assigned.includes(hMeta.code.toUpperCase());
+                    const isAway = assigned.includes(aMeta.name.toUpperCase()) || assigned.includes(aMeta.code.toUpperCase());
 
-    if (isHome) { hRoster.push(pObj); hStats.off += off; hStats.def += def; hStats.count++; }
-    else if (isAway) { aRoster.push(pObj); aStats.off += off; aStats.def += def; aStats.count++; }
-
+                    if (isHome) { hRoster.push(pObj); hStats.off += off; hStats.def += def; hStats.count++; }
+                    else if (isAway) { aRoster.push(pObj); aStats.off += off; aStats.def += def; aStats.count++; }
                 }
 
                 if (hRoster.length > 0) hRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, hRoster[0]).isCaptain = true;
@@ -527,7 +525,6 @@ for (let i = 1; i < rosterRaw.length; i++) {
                     }
                 }
 
-                // FIX 2: Corrected logic for default team stats to prevent 0 scores from defaulting to 1 incorrectly.
                 const hOff = hStats.count ? (hStats.off / hStats.count) : 0.0001;
                 const hDef = hStats.count ? (hStats.def / hStats.count) : 0.0001;
                 const aOff = aStats.count ? (aStats.off / aStats.count) : 0.0001;
@@ -658,7 +655,6 @@ for (let i = 1; i < rosterRaw.length; i++) {
                     return rHtml;
                 }
 
-                // FIX 3: Removed backslash escaping in template literal so HTML is rendered correctly
                 document.getElementById('app-mount').innerHTML = `
                     <div class="dash-widget scoreboard-outer-card" style="--h-color: ${hMeta.hex}; --a-color: ${aMeta.hex}; border-left: 4px solid ${hMeta.hex}; border-right: 4px solid ${aMeta.hex};">
                         
