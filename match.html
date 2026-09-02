@@ -408,49 +408,72 @@
             };
         }
 
+        // --- UPDATED ROBUST POISSON SYSTEM ---
         function calculateExpectedPercentages(teamA, teamB, matchCsvData, sheetAverages, ladderData, maxScore = 10) {
             const totalTeams = Object.keys(ladderData).length || 10;
+            
+            // Calculate true league baseline from match history if available
             let totalLeagueGoals = 0, totalLeagueMatches = 0;
             matchCsvData.forEach(m => {
                 totalLeagueGoals += (m.homeScore + m.awayScore);
                 totalLeagueMatches += 2;
             });
-            const leagueBaseline = totalLeagueMatches > 0 ? (totalLeagueGoals / totalLeagueMatches) : 1.5;
+            const leagueBaseline = totalLeagueMatches > 0 ? (totalLeagueGoals / totalLeagueMatches) : 1.45;
             sheetAverages._leagueBaseline = leagueBaseline;
 
             const statsA = resolveTeamMetrics(teamA, matchCsvData, sheetAverages, ladderData, totalTeams);
             const statsB = resolveTeamMetrics(teamB, matchCsvData, sheetAverages, ladderData, totalTeams);
 
-            const attA = statsA.avgScored / leagueBaseline;
+            // Realistic Home Field Advantage modifiers (Assumes Team A is Home)
+            const homeAdvantage = 1.12; 
+            const awayDisadvantage = 0.88;
+
+            const attA = (statsA.avgScored / leagueBaseline) * homeAdvantage;
             const defA = statsA.avgConceded / leagueBaseline;
-            const attB = statsB.avgScored / leagueBaseline;
+            const attB = (statsB.avgScored / leagueBaseline) * awayDisadvantage;
             const defB = statsB.avgConceded / leagueBaseline;
 
-            const lambdaA = Math.max(0.2, leagueBaseline * attA * defB);
-            const lambdaB = Math.max(0.2, leagueBaseline * attB * defA);
+            // Expected goals (lambdas) for each team
+            const lambdaA = Math.max(0.1, leagueBaseline * attA * defB);
+            const lambdaB = Math.max(0.1, leagueBaseline * attB * defA);
 
             let winA = 0, winB = 0, draw = 0;
             for (let i = 0; i <= maxScore; i++) {
                 for (let j = 0; j <= maxScore; j++) {
-                    const prob = poissonProbability(i, lambdaA) * poissonProbability(j, lambdaB);
+                    let prob = poissonProbability(i, lambdaA) * poissonProbability(j, lambdaB);
+                    
+                    // Dixon-Coles adjustment for realistic low-scoring football probability
+                    if (i === 0 && j === 0) prob *= 1.20; // Boost 0-0 likelihood
+                    if (i === 1 && j === 1) prob *= 1.10; // Boost 1-1 likelihood
+                    if ((i === 1 && j === 0) || (i === 0 && j === 1)) prob *= 0.90; // Slightly reduce 1-0/0-1
+                    
                     if (i > j) winA += prob;
                     else if (j > i) winB += prob;
                     else draw += prob;
                 }
             }
 
-            const totalProb = winA + winB + draw;
-            const pA = Math.round((winA / totalProb) * 100);
-            const pB = Math.round((winB / totalProb) * 100);
+            const totalProb = (winA + winB + draw);
+            
+            // If somehow totalProb is invalid, calculate a realistic tight match baseline
+            if (!totalProb || isNaN(totalProb) || totalProb <= 0) {
+                return { teamAWinPct: 38, teamBWinPct: 38, drawPct: 24, expectedLambdaA: 1.2, expectedLambdaB: 1.2 };
+            }
+
+            let pA = Math.round((winA / totalProb) * 100);
+            let pB = Math.round((winB / totalProb) * 100);
             let pD = Math.round((draw / totalProb) * 100);
-            pD += (100 - (pA + pB + pD)); // Ensure exact 100% allocation for UI consistency
+
+            // Distribute any rounding remainder to the draw to ensure exact 100% sum
+            const remainder = 100 - (pA + pB + pD);
+            pD += remainder; 
 
             return {
                 teamAWinPct: pA,
                 teamBWinPct: pB,
                 drawPct: pD,
-                expectedLambdaA: lambdaA,
-                expectedLambdaB: lambdaB
+                expectedLambdaA: parseFloat(lambdaA.toFixed(2)),
+                expectedLambdaB: parseFloat(lambdaB.toFixed(2))
             };
         }
         // --- END NEW POISSON SYSTEM FUNCTIONS ---
