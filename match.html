@@ -793,19 +793,19 @@
                         </div>
                     </div>
 
-                    <div class="dash-widget">
-                        <div class="section-title">Win Chance</div>
-                        <div class="predictor-labels">
-                            <span>${hCode} (${pHome}%)</span>
-                            <span>DRAW (${pDraw}%)</span>
-                            <span>${aCode} (${pAway}%)</span>
-                        </div>
-                        <div class="predictor-track-combined">
-                            <div class="predictor-segment" style="width: ${pHome}%; background: linear-gradient(90deg, ${hMeta.hex}, rgba(255,255,255,0.2));"></div>
-                            <div class="predictor-segment" style="width: ${pDraw}%; background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));"></div>
-                            <div class="predictor-segment" style="width: ${pAway}%; background: linear-gradient(90deg, rgba(255,255,255,0.2), ${aMeta.hex});"></div>
-                        </div>
-                    </div>
+                   <div class="dash-widget">
+                    <div class="section-title">Win Chance</div>
+                    <div class="predictor-labels">
+                    <span>${hCode} (${pHome}%)</span>
+                    <span>DRAW (${pDraw}%)</span>
+                   <span>${aCode} (${pAway}%)</span>
+    </div>
+    <div class="predictor-track-combined">
+        <div class="predictor-segment" style="width: ${pHome}%; background: linear-gradient(90deg, ${hMeta.hex}, rgba(255,255,255,0.2));"></div>
+        <div class="predictor-segment" style="width: ${pDraw}%; background: linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));"></div>
+        <div class="predictor-segment" style="width: ${pAway}%; background: linear-gradient(90deg, rgba(255,255,255,0.2), ${aMeta.hex});"></div>
+    </div>
+</div>
 
                     ${ytEmbed ? `
                     <div class="dash-widget" style="padding: 16px;">
