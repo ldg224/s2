@@ -419,17 +419,6 @@ for (let i = 1; i < scheduleRaw.length; i++) {
 
 if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
 
-                let teamMetaMap = {};
-                for (let i = 1; i < teamsRaw.length; i++) {
-                    if (teamsRaw[i][0]) {
-                        const fullName = teamsRaw[i][0];
-                        const code = (teamsRaw[i][1] || fullName.substring(0,3)).toUpperCase();
-                        const mgr = teamsRaw[i][2] || "Manager";
-                        const hex = teamsRaw[i][3] || "#9ca3af";
-                        teamMetaMap[code] = { name: fullName, code, mgr, hex };
-                    }
-                }
-
                 let rankMap = {};
                 for (let i = 1; i < standingsRaw.length; i++) {
                     const rName = standingsRaw[i][1];
