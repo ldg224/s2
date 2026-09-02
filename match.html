@@ -382,21 +382,42 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_STANDINGS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                let targetMatch = null;
-                for (let i = 1; i < scheduleRaw.length; i++) {
-                    const row = scheduleRaw[i];
-                    if (row.length < 7) continue;
-                    const isCorrectWeek = row[0] == queryWeek;
-                    const homeStr = (row[4]||"").toUpperCase();
-                    const awayStr = (row[6]||"").toUpperCase();
-                    
-                    if (isCorrectWeek && homeStr.includes(queryHome) && awayStr.includes(queryAway)) {
-                        targetMatch = row;
-                        break;
-                    }
-                }
+                let teamMetaMap = {};
+for (let i = 1; i < teamsRaw.length; i++) {
+    if (teamsRaw[i][0]) {
+        const fullName = teamsRaw[i][0];
+        const code = (teamsRaw[i][1] || fullName.substring(0,3)).toUpperCase().trim();
+        const mgr = teamsRaw[i][2] || "Manager";
+        const hex = teamsRaw[i][3] || "#9ca3af";
+        teamMetaMap[code] = { name: fullName, code, mgr, hex };
+        teamMetaMap[fullName.toUpperCase().trim()] = { name: fullName, code, mgr, hex };
+    }
+}
 
-                if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
+function resolveCode(str) {
+    if (!str) return '';
+    const clean = str.toUpperCase().trim();
+    if (teamMetaMap[clean]) return teamMetaMap[clean].code;
+    return clean.length <= 3 ? clean : clean.slice(0, 3);
+}
+
+let targetMatch = null;
+for (let i = 1; i < scheduleRaw.length; i++) {
+    const row = scheduleRaw[i];
+    if (row.length < 7) continue;
+    
+    const rowWeek = parseInt(row[0], 10);
+    const targetWeek = parseInt(queryWeek, 10);
+    const homeCode = resolveCode(row[4]);
+    const awayCode = resolveCode(row[6]);
+    
+    if (rowWeek === targetWeek && homeCode === queryHome.toUpperCase() && awayCode === queryAway.toUpperCase()) {
+        targetMatch = row;
+        break;
+    }
+}
+
+if (!targetMatch) throw new Error(`Could not locate fixture data for ${queryHome} vs ${queryAway} (Week ${queryWeek}).`);
 
                 let teamMetaMap = {};
                 for (let i = 1; i < teamsRaw.length; i++) {
@@ -471,16 +492,20 @@
                 let hRoster = [], aRoster = [];
                 let hStats = { off:0, def:0, count:0 }, aStats = { off:0, def:0, count:0 };
 
-                for (let i = 1; i < rosterRaw.length; i++) {
-                    const row = rosterRaw[i];
-                    if (!row[0]) continue;
-                    const assigned = (row[1] || "").toUpperCase();
-                    const off = parseInt(row[3])||0;
-                    const def = parseInt(row[4])||0;
-                    const pObj = { name: row[0], num: row[2], off, def, totalScore: off+def, events: [], isCaptain: false };
-                    
-                    if (assigned.includes(hMeta.name.toUpperCase())) { hRoster.push(pObj); hStats.off+=off; hStats.def+=def; hStats.count++; }
-                    if (assigned.includes(aMeta.name.toUpperCase())) { aRoster.push(pObj); aStats.off+=off; aStats.def+=def; aStats.count++; }
+for (let i = 1; i < rosterRaw.length; i++) {
+    const row = rosterRaw[i];
+    if (!row[0]) continue;
+    const assigned = (row[1] || "").toUpperCase().trim();
+    const off = parseInt(row[3]) || 0;
+    const def = parseInt(row[4]) || 0;
+    const pObj = { name: row[0], num: row[2], off, def, totalScore: off + def, events: [], isCaptain: false };
+    
+    const isHome = assigned.includes(hMeta.name.toUpperCase()) || assigned.includes(hMeta.code.toUpperCase());
+    const isAway = assigned.includes(aMeta.name.toUpperCase()) || assigned.includes(aMeta.code.toUpperCase());
+
+    if (isHome) { hRoster.push(pObj); hStats.off += off; hStats.def += def; hStats.count++; }
+    else if (isAway) { aRoster.push(pObj); aStats.off += off; aStats.def += def; aStats.count++; }
+
                 }
 
                 if (hRoster.length > 0) hRoster.reduce((max, p) => p.totalScore > max.totalScore ? p : max, hRoster[0]).isCaptain = true;
