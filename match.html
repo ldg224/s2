@@ -591,10 +591,18 @@
                         hScore: parseInt(row[5]), aScore: parseInt(row[7]),
                         status: status
                     };
+
+                    const dateStr = row[1] ? row[1].trim() : '';
+                    const timeStr = row[2] ? row[2].trim() : '';
+                    const matchDateTime = parseMatchDateTime(dateStr, timeStr);
+                    const isScheduledTimeReached = matchDateTime ? (new Date() >= matchDateTime) : false;
                     
-                    if (status.includes("FINALISED")) {
+                    let isFinalised = status.includes("FINALISED") && isScheduledTimeReached;
+                    let isLive = (status.includes("ACTIVE") || status.includes("LIVE")) && isScheduledTimeReached;
+                    
+                    if (isFinalised) {
                         past.push(matchObj);
-                    } else if (!status.includes("ACTIVE") && !status.includes("LIVE") && status !== "") {
+                    } else if (status !== "" && !isLive) {
                         future.push(matchObj);
                     }
                 }
@@ -793,13 +801,26 @@
                 for (let i = 1; i < scheduleRaw.length; i++) {
                     const row = scheduleRaw[i];
                     if (!row || row.length < 7) continue;
-                    const status = (row[3] || "").toUpperCase();
-                    if (status === "FINALISED" && row[5] !== "" && row[7] !== "") {
-                        const hName = row[4].trim().toUpperCase();
-                        const aName = row[6].trim().toUpperCase();
-                        let histHCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === hName) || hName;
-                        let histACode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === aName) || aName;
+                    
+                    const rWeek = row[0].trim();
+                    const hName = row[4].trim().toUpperCase();
+                    const aName = row[6].trim().toUpperCase();
+                    
+                    let histHCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === hName) || hName;
+                    let histACode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === aName) || aName;
 
+                    // Exclude the current match from historical data for prediction
+                    if (rWeek === queryWeek && histHCode === queryHome && histACode === queryAway) {
+                        continue;
+                    }
+
+                    const status = (row[3] || "").toUpperCase();
+                    const dateStr = row[1] ? row[1].trim() : '';
+                    const timeStr = row[2] ? row[2].trim() : '';
+                    const matchDateTime = parseMatchDateTime(dateStr, timeStr);
+                    const isScheduledTimeReached = matchDateTime ? (new Date() >= matchDateTime) : false;
+
+                    if (status.includes("FINALISED") && isScheduledTimeReached && row[5] !== "" && row[7] !== "") {
                         matchCsvData.push({
                             home: histHCode,
                             away: histACode,
