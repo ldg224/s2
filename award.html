@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Awards | HCL S2</title>
+    <link rel="icon" type="image/png" href="league_files/Season 2 Logo (PRIMARY).png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap');
+
+        :root {
+            --bg-main: #0f1115;
+            --grid-color: rgba(255, 255, 255, 0.03);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            --glass-bg: rgba(20, 22, 27, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --header-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.45));
+            --brand-grad: linear-gradient(135deg, #d5d915 0%, #76d306 60%);
+            --brand-solid: #8fff06b1;
+            
+            --award-gold: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            --award-silver: linear-gradient(135deg, #9ca3af 0%, #4b5563 100%);
+            --award-bronze: linear-gradient(135deg, #b45309 0%, #78350f 100%);
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-weight: 500;
+            margin: 0; padding: 0;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: var(--bg-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background-image: 
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .app-container {
+            max-width: 1000px; margin: 0 auto;
+            padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
+            display: flex; flex-direction: column; gap: 32px;
+        }
+
+        nav { display: flex; align-items: center; width: 100%; z-index: 10; margin-bottom: 8px; }
+        .back-link {
+            text-decoration: none; color: var(--text-muted); font-size: 0.9rem;
+            font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, rgba(30, 35, 45, 0.8), rgba(18, 20, 26, 0.8));
+            backdrop-filter: blur(12px);
+            padding: 10px 20px; border-radius: 999px; border: 1px solid var(--glass-border);Here is the complete `award.html` file, built using your existing design system, CSS variables, and the specific time-parsing logic to ensure no future results leak. 
+
+It fetches the data dynamically and calculates the following awards based on your existing CSV structure:
+*   **Golden Boot:** Tallies actual goals scored from the match events (Player IDs in the schedule CSV) for all finalised, past matches.
+*   **Golden Glove:** Tallies clean sheets from finalised matches and awards them to the assigned `[GK]` of the respective teams.
+*   **Best Attacker / Best Defender:** Dynamically pulls the highest `Off` and `Def` rated players from the roster.
+
+### `award.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Awards | HCL S2</title>
+    <link rel="icon" type="image/png" href="league_files/Season 2 Logo (PRIMARY).png">
+
+    <style>
+        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap)');
+
+        :root {
+            --bg-main: #0f1115;
+            --grid-color: rgba(255, 255, 255, 0.03);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            --glass-bg: rgba(20, 22, 27, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            --header-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.45));
+            --brand-grad: linear-gradient(135deg, #d5d915 0%, #76d306 60%);
+            --brand-solid: #8fff06b1;
+            
+            --award-gold: linear-gradient(135deg, #f59e0b, #fbbf24, #fef08a);
+            --award-silver: linear-gradient(135deg, #9ca3af, #d1d5db, #f3f4f6);
+            --award-accent: rgba(245, 158, 11, 0.2);
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-weight: 500;
+            margin: 0; padding: 0;
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-color: var(--bg-main);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        .grid-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+            background-image: 
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        nav { display: flex; align-items: center; width: 100%; z-index: 10; margin-bottom: -10px; }
+        .back-link {
+            text-decoration: none; color: var(--text-muted); font-size: 0.9rem;
+            font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, rgba(30, 35, 45, 0.8), rgba(18, 20, 26, 0.8));
+            backdrop-filter: blur(12px);
+            padding: 10px 20px; border-radius: 999px; border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .back-link:hover { 
+            color: var(--text-main); 
+            background: linear-gradient(135deg, rgba(45, 52, 66, 0.9), rgba(25, 28, 36, 0.9)); 
+            transform: translateY(-2px);
+        }
+
+        header {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--header-overlay), url('league_files/Season 2 Title Image');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px solid var(--glass-border);
+            padding: 24px 28px;
+            border-radius: 26px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+            overflow: hidden;
+        }
+
+        .header-text {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+            padding: 24px 26px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px);
+            border-radius: 22px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            max-width: 640px;
+        }
+
+        .header-text h1 { 
+            margin: 0 0 8px 0; 
+            font-size: clamp(2rem, 5vw, 2.8rem); 
+            font-weight: 900; 
+            letter-spacing: -0.8px; 
+            color: var(--text-main);
+            line-height: 1.05;
+        }
+
+        .header-eyebrow {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #fbbf24;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .awards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .award-card {
+            background: linear-gradient(180deg, rgba(18, 20, 26, 0.95), rgba(14, 16, 22, 0.94));
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
+            padding: 30px;
+            box-shadow: 0 26px 55px rgba(0, 0, 0, 0.25);
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .award-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .award-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--award-gold);
+            opacity: 0.8;
+        }
+
+        .award-card::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 150%; height: 150%;
+            background: radial-gradient(circle at center, var(--award-accent) 0%, transparent 60%);
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .award-icon-wrapper {
+            width: 80px; height: 80px;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(251, 191, 36, 0.2);
+        }
+
+        .award-title {
+            font-size: 1.3rem; font-weight: 900; letter-spacing: -0.5px;
+            margin: 0 0 4px 0; position: relative; z-index: 2;
+            background: var(--award-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .award-subtitle {
+            font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin: 0 0 24px 0; position: relative; z-index: 2;
+        }
+
+        .winner-block {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .winner-stat-badge {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; font-size: 1.1rem; font-weight: 900;
+            padding: 8px 16px; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .winner-name {
+            font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        .winner-team {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.9rem; font-weight: 700; color: var(--text-muted);
+        }
+        
+        .team-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+        }
+
+        .runner-up-list {
+            margin-top: 16px; width: 100%; position: relative; z-index: 2;
+        }
+        
+        .runner-up-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .runner-up-row:last-child { margin-bottom: 0; }
+        
+        .runner-up-name { font-weight: 700; }
+        .runner-up-stat { font-weight: 900; color: var(--text-main); }
+
+        @media (max-width: 768px) {
+            .awards-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+
+    <div class="app-container">
+        
+        <nav>
+            <a href="index.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Dashboard
+            </a>
+        </nav>
+
+        <header>
+            <div class="header-text">
+                <span class="header-eyebrow">End of Season Honors</span>
+                <h1>League Awards</h1>
+            </div>
+        </header>
+
+        <main id="awards-mount" class="awards-grid">
+            <div style="text-align:center; padding: 80px 0; color: var(--text-muted); font-weight: 600; animation: fadeInUp 0.5s ease; grid-column: 1 / -1;">
+                <div style="display:inline-block; width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: #fbbf24; animation: spin 1s linear infinite; margin-bottom: 16px;"></div>
+                <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+                <br>Calculating award winners...
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const CSV_SCHEDULE = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv)";
+        const CSV_TEAMS = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv)";
+        const CSV_ROSTERS = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv)";
+
+        async function fetchCSV(url) {
+            const res = await fetch(url);
+            const text = await res.text();
+            return text.split(/\r\n|\n/).map(line => {
+                let result = []; let current = ''; let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    let char = line[i];
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                    else current += char;
+                }
+                result.push(current.trim());
+                return result;
+            });
+        }
+
+        // --- FLEXIBLE DATE & TIME PARSER (PREVENTS LEAKS) ---
+        function parseMatchDateTime(dateStr, timeStr) {
+            if (!dateStr || dateStr.trim().toLowerCase() === 'tba') return null;
+
+            const dateParts = dateStr.trim().match(/\d+/g);
+            if (!dateParts || dateParts.length < 2) return null;
+
+            let day, month, year = new Date().getFullYear();
+
+            if (dateParts[0].length === 4) {
+                year = parseInt(dateParts[0], 10);
+                month = parseInt(dateParts[1], 10) - 1;
+                day = parseInt(dateParts[2], 10);
+            } else {
+                day = parseInt(dateParts[0], 10);
+                month = parseInt(dateParts[1], 10) - 1;
+                if (dateParts.length >= 3 && dateParts[2].length === 4) {
+                    year = parseInt(dateParts[2], 10);
+                }
+            }
+
+            let hours = 0, minutes = 0;
+            if (timeStr && timeStr.trim().toLowerCase() !== 'tba') {
+                const timeParts = timeStr.trim().match(/\d+/g);
+                if (timeParts && timeParts.length >= 1) {
+                    hours = parseInt(timeParts[0], 10);
+                    if (hours === 24) hours = 0;
+                    if (timeParts.length >= 2) {
+                        minutes = parseInt(timeParts[1], 10);
+                    }
+                }
+            }
+
+            const dt = new Date(year, month, day, hours, minutes);
+            return isNaN(dt.getTime()) ? null : dt;
+        }
+
+        function createAwardCard(icon, title, subtitle, topWinners, statLabel) {
+            if (!topWinners || topWinners.length === 0) return '';
+            
+            const winner = topWinners[0];
+            const runnersUp = topWinners.slice(1, 4);
+            const winnerTeamHex = winner.teamHex || '#475569';
+            
+            let runnersUpHtml = '';
+            if (runnersUp.length > 0) {
+                runnersUpHtml = `<div class="runner-up-list">` + runnersUp.map(p => `
+                    <div class="runner-up-row">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div class="team-dot" style="background: ${p.teamHex || '#fff'}; box-shadow: 0 0 6px ${p.teamHex || '#fff'};"></div>
+                            <span class="runner-up-name">${p.name}</span>
+                        </div>
+                        <span class="runner-up-stat">${p.stat} ${statLabel}</span>
+                    </div>
+                `).join('') + `</div>`;
+            }
+
+            return `
+                <div class="award-card">
+                    <div class="award-icon-wrapper">${icon}</div>
+                    <h2 class="award-title">${title}</h2>
+                    <h3 class="award-subtitle">${subtitle}</h3>
+                    
+                    <div class="winner-block">
+                        <div class="winner-stat-badge">${winner.stat} ${statLabel}</div>
+                        <h3 class="winner-name">${winner.name}</h3>
+                        <div class="winner-team">
+                            <div class="team-dot" style="background: ${winnerTeamHex}; box-shadow: 0 0 8px ${winnerTeamHex};"></div>
+                            ${winner.teamName}
+                        </div>
+                    </div>
+                    
+                    ${runnersUpHtml}
+                </div>
+            `;
+        }
+
+        async function bootApp() {
+            try {
+                const [scheduleRaw, rosterRaw, teamsRaw] = await Promise.all([
+                    fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_TEAMS)
+                ]);
+
+                // Map Teams
+                let teamsMap = {};
+                teamsRaw.forEach((row, i) => {
+                    if (i === 0 || !row || !row[0]) return;
+                    teamsMap[row[1].trim().toUpperCase()] = {
+                        name: row[0].trim(),
+                        code: row[1].trim().toUpperCase(),
+                        hex: row[3] ? row[3].trim() : '#475569',
+                    };
+                });
+
+                let players = [];
+                let playerMap = {}; // Key: "TeamCode_PlayerNum"
+
+                // Map Rosters
+                rosterRaw.forEach((row, i) => {
+                    if (i === 0 || !row || !row[0]) return;
+                    let assignedTeamName = row[3] ? row[3].trim().toUpperCase() : '';
+                    if(!assignedTeamName) return;
+                    
+                    let teamCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === assignedTeamName) || '';
+                    if(!teamCode) return;
+
+                    let regexVal = /\((\d+)\)/;
+                    let offStr = row[4] ? row[4].trim() : '';
+                    let defStr = row[5] ? row[5].trim() : '';
+                    let off = offStr.match(regexVal) ? parseInt(offStr.match(regexVal)[1]) : 0;
+                    let def = defStr.match(regexVal) ? parseInt(defStr.match(regexVal)[1]) : 0;
+                    
+                    let posCode = 'DEF';
+                    if(row[2]) {
+                        let m = row[2].match(/\[(.*?)\]/);
+                        if(m) posCode = m[1].toUpperCase();
+                    }
+
+                    let rawNumStr = String(row[0]).trim();
+                    let slicedNum = rawNumStr.length > 2 ? rawNumStr.slice(-2) : rawNumStr;
+
+                    let pObj = {
+                        num: slicedNum,
+                        name: row[1],
+                        pos: posCode,
+                        teamCode: teamCode,
+                        teamName: teamsMap[teamCode].name,
+                        teamHex: teamsMap[teamCode].hex,
+                        off: off,
+                        def: def,
+                        totalScore: off + def,
+                        goals: 0,
+                        cleanSheets: 0
+                    };
+
+                    players.push(pObj);
+                    playerMap[`${teamCode}_${slicedNum}`] = pObj;
+                });
+
+                // Tally Goals and Clean Sheets from FINALISED matches only
+                let teamCleanSheets = {}; // Map teamCode to CS count
+                Object.keys(teamsMap).forEach(k => teamCleanSheets[k] = 0);
+
+                for (let i = 1; i < scheduleRaw.length; i++) {
+                    const row = scheduleRaw[i];
+                    if (!row || row.length < 7) continue;
+
+                    const status = (row[3] || "").toUpperCase();
+                    const dateStr = row[1] ? row[1].trim() : '';
+                    const timeStr = row[2] ? row[2].trim() : '';
+                    
+                    const matchDateTime = parseMatchDateTime(dateStr, timeStr);
+                    const isScheduledTimeReached = matchDateTime ? (new Date() >= matchDateTime) : false;
+
+                    if (status.includes("FINALISED") && isScheduledTimeReached) {
+                        const homeName = row[4].trim().toUpperCase();
+                        const awayName = row[6].trim().toUpperCase();
+                        let homeCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === homeName) || homeName;
+                        let awayCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === awayName) || awayName;
+                        
+                        const hScore = parseInt(row[5]);
+                        const aScore = parseInt(row[7]);
+
+                        // Clean Sheets Tally
+                        if (!isNaN(hScore) && !isNaN(aScore)) {
+                            if (hScore === 0 && teamCleanSheets[awayCode] !== undefined) teamCleanSheets[awayCode]++;
+                            if (aScore === 0 && teamCleanSheets[homeCode] !== undefined) teamCleanSheets[homeCode]++;
+                        }
+
+                        // Goals Tally (Cols 9 and 10 repeat for each goal event)
+                        for(let g=0; g<6; g++) {
+                            let minCol = 9 + (g*2);
+                            let idCol = 10 + (g*2);
+                            if(row[minCol] && row[idCol]) {
+                                let pIdRaw = row[idCol].trim();
+                                let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
+                                if(pId) {
+                                    // We don't explicitly know which team scored based solely on the event ID,
+                                    // but we can check both teams' rosters for that ID.
+                                    if (playerMap[`${homeCode}_${pId}`]) {
+                                        playerMap[`${homeCode}_${pId}`].goals++;
+                                    } else if (playerMap[`${awayCode}_${pId}`]) {
+                                        playerMap[`${awayCode}_${pId}`].goals++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Assign Clean Sheets to GKs
+                players.forEach(p => {
+                    if (p.pos === 'GK') {
+                        p.cleanSheets = teamCleanSheets[p.teamCode] || 0;
+                    }
+                });
+
+                // Map data structures for awards sorting
+                const formatAwardPlayer = (p, statVal) => ({
+                    name: p.name, teamName: p.teamName, teamHex: p.teamHex, stat: statVal
+                });
+
+                const goldenBootList = players
+                    .filter(p => p.goals > 0)
+                    .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
+                    .map(p => formatAwardPlayer(p, p.goals));
+
+                const goldenGloveList = players
+                    .filter(p => p.pos === 'GK')
+                    .sort((a, b) => b.cleanSheets - a.cleanSheets || a.name.localeCompare(b.name))
+                    .map(p => formatAwardPlayer(p, p.cleanSheets));
+                
+                const bestAttackerList = players
+                    .filter(p => p.pos === 'FWD' || p.pos === 'MID')
+                    .sort((a, b) => b.off - a.off || a.name.localeCompare(b.name))
+                    .map(p => formatAwardPlayer(p, p.off));
+                    
+                const bestDefenderList = players
+                    .filter(p => p.pos === 'DEF' || p.pos === 'GK')
+                    .sort((a, b) => b.def - a.def || a.name.localeCompare(b.name))
+                    .map(p => formatAwardPlayer(p, p.def));
+
+                // Generate HTML Output
+                const mount = document.getElementById('awards-mount');
+                mount.innerHTML = '';
+
+                let htmlContent = '';
+                
+                if (goldenBootList.length > 0) {
+                    htmlContent += createAwardCard('⚽', 'Golden Boot', 'Top Goalscorer', goldenBootList, 'Goals');
+                } else {
+                    htmlContent += createAwardCard('⚽', 'Golden Boot', 'Top Goalscorer', [{name: 'TBD', teamName: 'Matches Pending', stat: 0}], 'Goals');
+                }
+
+                if (goldenGloveList.length > 0) {
+                    htmlContent += createAwardCard('🧤', 'Golden Glove', 'Most Clean Sheets', goldenGloveList, 'CS');
+                } else {
+                    htmlContent += createAwardCard('🧤', 'Golden Glove', 'Most Clean Sheets', [{name: 'TBD', teamName: 'Matches Pending', stat: 0}], 'CS');
+                }
+
+                if (bestAttackerList.length > 0) {
+                    htmlContent += createAwardCard('⚡', 'Offensive MVP', 'Highest Attack Rating', bestAttackerList, 'OVR');
+                }
+
+                if (bestDefenderList.length > 0) {
+                    htmlContent += createAwardCard('🛡️', 'Defensive Anchor', 'Highest Defence Rating', bestDefenderList, 'OVR');
+                }
+
+                mount.innerHTML = htmlContent;
+
+            } catch (err) {
+                document.getElementById('awards-mount').innerHTML = `
+                    <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #f87171; border: 1px dashed rgba(248, 113, 113, 0.3); border-radius: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(15, 17, 21, 0.5)); backdrop-filter: blur(8px);">
+                        <h3 style="margin-top:0;">Awards Information Unavailable</h3>
+                        <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted);">${err.message}</p>
+                    </div>`;
+                console.error(err);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', bootApp);
+    </script>
+</body>
+</html>
