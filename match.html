@@ -569,47 +569,49 @@
         }
         // --- END POISSON SYSTEM FUNCTIONS ---
 
-        // --- FORM & NEXT MATCH ---
-        function getTeamMatches(teamName, allMatches, currentWeek) {
+        // --- FORM & NEXT MATCH (CSV INDEX ORDERING) ---
+        function getTeamMatches(teamName, allMatches, currentIndex) {
             let past = [];
-            let future = [];
+            let nextMatch = null;
+            
             for (let i = 1; i < allMatches.length; i++) {
                 const row = allMatches[i];
                 if (!row || row.length < 7) continue;
                 
-                const w = row[0].trim();
                 const h = row[4].trim().toUpperCase();
                 const a = row[6].trim().toUpperCase();
-                const status = (row[3] || "").toUpperCase();
                 
                 if (h === teamName.toUpperCase() || a === teamName.toUpperCase()) {
-                    if (w === currentWeek) continue;
+                    if (i === currentIndex) continue;
                     
                     let matchObj = {
-                        week: w, date: row[1], time: row[2],
+                        week: row[0].trim(), date: row[1], time: row[2],
                         home: row[4].trim(), away: row[6].trim(),
                         hScore: parseInt(row[5]), aScore: parseInt(row[7]),
-                        status: status
+                        status: (row[3] || "").toUpperCase()
                     };
 
+                    const status = matchObj.status;
                     const dateStr = row[1] ? row[1].trim() : '';
                     const timeStr = row[2] ? row[2].trim() : '';
                     const matchDateTime = parseMatchDateTime(dateStr, timeStr);
                     const isScheduledTimeReached = matchDateTime ? (new Date() >= matchDateTime) : false;
                     
                     let isFinalised = status.includes("FINALISED") && isScheduledTimeReached;
-                    let isLive = (status.includes("ACTIVE") || status.includes("LIVE")) && isScheduledTimeReached;
                     
-                    if (isFinalised) {
+                    // Form (Last 5) - Strictly matches BEFORE the current viewed index
+                    if (i < currentIndex && isFinalised) {
                         past.push(matchObj);
-                    } else if (status !== "" && !isLive) {
-                        future.push(matchObj);
+                    } 
+                    // Next Match - Strictly the FIRST scheduled match AFTER the current viewed index
+                    else if (i > currentIndex && nextMatch === null) {
+                        nextMatch = matchObj;
                     }
                 }
             }
             return {
                 last5: past.slice(-5),
-                next: future.length > 0 ? future[0] : null
+                next: nextMatch
             };
         }
 
@@ -652,6 +654,9 @@
             let aCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === nextMatch.away.toUpperCase()) || nextMatch.away;
             let matchUrl = `?week=${nextMatch.week}&home=${hCode}&away=${aCode}`;
             
+            // Dynamic text handling for Round/Week labels (Handles "SF", "GF" instead of "WK SF")
+            let weekDisplay = isNaN(nextMatch.week) ? nextMatch.week.toUpperCase() : `WK ${nextMatch.week}`;
+            
             return `
                 <div class="interactive-next-card" onclick="window.location.href='${matchUrl}'" style="display:flex; align-items:center; gap: 20px; background: linear-gradient(135deg, rgba(20,24,32,0.9), rgba(10,12,16,0.95)); border: 1px solid ${oppHex}50; border-left: 4px solid ${oppHex}; padding: 20px; border-radius: 16px; position: relative; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 25px ${oppHex}15;">
                     ${oppSecLogo ? `<img src="${oppSecLogo}" style="position:absolute; right:-15%; top:50%; transform:translateY(-50%) rotate(15deg); height:160%; opacity:0.04; filter:grayscale(100%); pointer-events:none; z-index: 0;">` : ''}
@@ -659,7 +664,7 @@
                     ${oppLogo ? `<img src="${oppLogo}" style="width:75px; height:75px; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,0.6)); z-index: 2;">` : ''}
                     
                     <div style="text-align:left; z-index: 2; flex: 1;">
-                        <div style="font-size:0.75rem; color:${oppHex}; font-weight:900; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">WK ${nextMatch.week}</div>
+                        <div style="font-size:0.75rem; color:${oppHex}; font-weight:900; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">${weekDisplay}</div>
                         <div style="font-weight:900; font-size:1.1rem; line-height:1.2; margin-bottom:4px; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${oppName}</div>
                         <div style="font-size:0.85rem; color:var(--text-muted); font-weight:600;"><span style="color:#fff;">${nextMatch.date}</span> &bull; ${nextMatch.time}</div>
                     </div>
@@ -781,8 +786,9 @@
                     }
                 });
 
-                // Retrieve Specific Match
-                let targetMatch = scheduleRaw.find(row => {
+                // Retrieve Specific Match and Index
+                let targetMatchIndex = -1;
+                let targetMatch = scheduleRaw.find((row, index) => {
                     if(!row || !row[4] || !row[6]) return false;
                     const rWeek = row[0].trim();
                     const rHomeName = row[4].trim().toUpperCase();
@@ -791,10 +797,14 @@
                     let rHomeCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === rHomeName) || rHomeName;
                     let rAwayCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === rAwayName) || rAwayName;
                     
-                    return (rWeek === queryWeek && rHomeCode === queryHome && rAwayCode === queryAway);
+                    if (rWeek === queryWeek && rHomeCode === queryHome && rAwayCode === queryAway) {
+                        targetMatchIndex = index;
+                        return true;
+                    }
+                    return false;
                 });
 
-                if (!targetMatch) throw new Error("Match not found in system.");
+                if (!targetMatch || targetMatchIndex === -1) throw new Error("Match not found in system.");
 
                 // Process Match History for Poisson
                 let matchCsvData = [];
@@ -840,9 +850,9 @@
                 const hSecLogoUrl = (TEAM_ASSETS[hCode] && TEAM_ASSETS[hCode].secondary) ? TEAM_ASSETS[hCode].secondary : '';
                 const aSecLogoUrl = (TEAM_ASSETS[aCode] && TEAM_ASSETS[aCode].secondary) ? TEAM_ASSETS[aCode].secondary : '';
 
-                // Load Last 5 & Next Match Data
-                const hFormMatches = getTeamMatches(hMeta.name, scheduleRaw, queryWeek);
-                const aFormMatches = getTeamMatches(aMeta.name, scheduleRaw, queryWeek);
+                // Load Last 5 & Next Match Data Using the Strict CSV Row Index Order
+                const hFormMatches = getTeamMatches(hMeta.name, scheduleRaw, targetMatchIndex);
+                const aFormMatches = getTeamMatches(aMeta.name, scheduleRaw, targetMatchIndex);
 
                 // --- SCHEDULED TIME & FINALISED VISIBILITY LOGIC ---
                 const rawStatus = (targetMatch[3] || '').trim().toUpperCase();
