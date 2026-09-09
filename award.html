@@ -19,90 +19,8 @@
             --glass-border: rgba(255, 255, 255, 0.08);
             --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             --header-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.45));
-            --brand-grad: linear-gradient(135deg, #d5d915 0%, #76d306 60%);
-            --brand-solid: #8fff06b1;
-            
-            --award-gold: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-            --award-silver: linear-gradient(135deg, #9ca3af 0%, #4b5563 100%);
-            --award-bronze: linear-gradient(135deg, #b45309 0%, #78350f 100%);
-        }
-
-        body {
-            font-family: var(--font-family);
-            font-weight: 500;
-            margin: 0; padding: 0;
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow-x: hidden;
-            background-color: var(--bg-main);
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; }
-
-        .grid-bg {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
-            background-image: 
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-            background-size: 32px 32px;
-            pointer-events: none;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .app-container {
-            max-width: 1000px; margin: 0 auto;
-            padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
-            display: flex; flex-direction: column; gap: 32px;
-        }
-
-        nav { display: flex; align-items: center; width: 100%; z-index: 10; margin-bottom: 8px; }
-        .back-link {
-            text-decoration: none; color: var(--text-muted); font-size: 0.9rem;
-            font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
-            transition: all 0.2s ease;
-            background: linear-gradient(135deg, rgba(30, 35, 45, 0.8), rgba(18, 20, 26, 0.8));
-            backdrop-filter: blur(12px);
-            padding: 10px 20px; border-radius: 999px; border: 1px solid var(--glass-border);Here is the complete `award.html` file, built using your existing design system, CSS variables, and the specific time-parsing logic to ensure no future results leak. 
-
-It fetches the data dynamically and calculates the following awards based on your existing CSV structure:
-*   **Golden Boot:** Tallies actual goals scored from the match events (Player IDs in the schedule CSV) for all finalised, past matches.
-*   **Golden Glove:** Tallies clean sheets from finalised matches and awards them to the assigned `[GK]` of the respective teams.
-*   **Best Attacker / Best Defender:** Dynamically pulls the highest `Off` and `Def` rated players from the roster.
-
-### `award.html`
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Awards | HCL S2</title>
-    <link rel="icon" type="image/png" href="league_files/Season 2 Logo (PRIMARY).png">
-
-    <style>
-        @import url('[https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&display=swap)');
-
-        :root {
-            --bg-main: #0f1115;
-            --grid-color: rgba(255, 255, 255, 0.03);
-            --text-main: #f9fafb;
-            --text-muted: #9ca3af;
-            --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            --glass-bg: rgba(20, 22, 27, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            --header-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.72), rgba(0, 0, 0, 0.45));
-            --brand-grad: linear-gradient(135deg, #d5d915 0%, #76d306 60%);
-            --brand-solid: #8fff06b1;
             
             --award-gold: linear-gradient(135deg, #f59e0b, #fbbf24, #fef08a);
-            --award-silver: linear-gradient(135deg, #9ca3af, #d1d5db, #f3f4f6);
             --award-accent: rgba(245, 158, 11, 0.2);
         }
 
@@ -379,13 +297,17 @@ It fetches the data dynamically and calculates the following awards based on you
     </div>
 
     <script>
-        const CSV_SCHEDULE = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv)";
-        const CSV_TEAMS = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv)";
-        const CSV_ROSTERS = "[https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv](https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv)";
+        const CSV_SCHEDULE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=242746494&single=true&output=csv";
+        const CSV_TEAMS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=0&single=true&output=csv";
+        const CSV_ROSTERS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWLzMxExK_CHV8x6uGcYFuDTKIaIfQIFMMrDz89AbrbBtgt4E22U8lmMyr-p3F-_cZcGPmm1qJSSYN/pub?gid=1346726150&single=true&output=csv";
 
         async function fetchCSV(url) {
             const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error(`Failed to load data. The server returned a ${res.status} error. Please check if the spreadsheet link is active and published.`);
+            }
             const text = await res.text();
+            
             return text.split(/\r\n|\n/).map(line => {
                 let result = []; let current = ''; let inQuotes = false;
                 for (let i = 0; i < line.length; i++) {
@@ -399,7 +321,6 @@ It fetches the data dynamically and calculates the following awards based on you
             });
         }
 
-        // --- FLEXIBLE DATE & TIME PARSER (PREVENTS LEAKS) ---
         function parseMatchDateTime(dateStr, timeStr) {
             if (!dateStr || dateStr.trim().toLowerCase() === 'tba') return null;
 
@@ -482,47 +403,55 @@ It fetches the data dynamically and calculates the following awards based on you
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // Map Teams
+                // 1. Rigorous Data Mapping for Teams
                 let teamsMap = {};
                 teamsRaw.forEach((row, i) => {
-                    if (i === 0 || !row || !row[0]) return;
-                    teamsMap[row[1].trim().toUpperCase()] = {
-                        name: row[0].trim(),
-                        code: row[1].trim().toUpperCase(),
-                        hex: row[3] ? row[3].trim() : '#475569',
+                    if (i === 0 || !row || row.length < 2) return;
+                    
+                    let teamName = (row[0] || '').trim();
+                    let teamCode = (row[1] || '').trim().toUpperCase();
+                    
+                    if (!teamCode) return;
+                    
+                    teamsMap[teamCode] = {
+                        name: teamName,
+                        code: teamCode,
+                        hex: (row[3] || '').trim() || '#475569',
                     };
                 });
 
                 let players = [];
-                let playerMap = {}; // Key: "TeamCode_PlayerNum"
+                let playerMap = {}; 
 
-                // Map Rosters
+                // 2. Rigorous Data Mapping for Rosters
                 rosterRaw.forEach((row, i) => {
-                    if (i === 0 || !row || !row[0]) return;
-                    let assignedTeamName = row[3] ? row[3].trim().toUpperCase() : '';
+                    if (i === 0 || !row || row.length < 2) return;
+                    
+                    let assignedTeamName = (row[3] || '').trim().toUpperCase();
                     if(!assignedTeamName) return;
                     
                     let teamCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === assignedTeamName) || '';
                     if(!teamCode) return;
 
                     let regexVal = /\((\d+)\)/;
-                    let offStr = row[4] ? row[4].trim() : '';
-                    let defStr = row[5] ? row[5].trim() : '';
+                    let offStr = (row[4] || '').trim();
+                    let defStr = (row[5] || '').trim();
+                    
                     let off = offStr.match(regexVal) ? parseInt(offStr.match(regexVal)[1]) : 0;
                     let def = defStr.match(regexVal) ? parseInt(defStr.match(regexVal)[1]) : 0;
                     
                     let posCode = 'DEF';
                     if(row[2]) {
-                        let m = row[2].match(/\[(.*?)\]/);
+                        let m = String(row[2]).match(/\[(.*?)\]/);
                         if(m) posCode = m[1].toUpperCase();
                     }
 
-                    let rawNumStr = String(row[0]).trim();
+                    let rawNumStr = String(row[0] || '').trim();
                     let slicedNum = rawNumStr.length > 2 ? rawNumStr.slice(-2) : rawNumStr;
 
                     let pObj = {
                         num: slicedNum,
-                        name: row[1],
+                        name: (row[1] || '').trim() || 'Unknown Player',
                         pos: posCode,
                         teamCode: teamCode,
                         teamName: teamsMap[teamCode].name,
@@ -538,8 +467,8 @@ It fetches the data dynamically and calculates the following awards based on you
                     playerMap[`${teamCode}_${slicedNum}`] = pObj;
                 });
 
-                // Tally Goals and Clean Sheets from FINALISED matches only
-                let teamCleanSheets = {}; // Map teamCode to CS count
+                // 3. Tally Match Stats Securely 
+                let teamCleanSheets = {}; 
                 Object.keys(teamsMap).forEach(k => teamCleanSheets[k] = 0);
 
                 for (let i = 1; i < scheduleRaw.length; i++) {
@@ -547,37 +476,35 @@ It fetches the data dynamically and calculates the following awards based on you
                     if (!row || row.length < 7) continue;
 
                     const status = (row[3] || "").toUpperCase();
-                    const dateStr = row[1] ? row[1].trim() : '';
-                    const timeStr = row[2] ? row[2].trim() : '';
+                    const dateStr = (row[1] || "").trim();
+                    const timeStr = (row[2] || "").trim();
                     
                     const matchDateTime = parseMatchDateTime(dateStr, timeStr);
                     const isScheduledTimeReached = matchDateTime ? (new Date() >= matchDateTime) : false;
 
                     if (status.includes("FINALISED") && isScheduledTimeReached) {
-                        const homeName = row[4].trim().toUpperCase();
-                        const awayName = row[6].trim().toUpperCase();
+                        const homeName = (row[4] || "").trim().toUpperCase();
+                        const awayName = (row[6] || "").trim().toUpperCase();
                         let homeCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === homeName) || homeName;
                         let awayCode = Object.keys(teamsMap).find(k => teamsMap[k].name.toUpperCase() === awayName) || awayName;
                         
                         const hScore = parseInt(row[5]);
                         const aScore = parseInt(row[7]);
 
-                        // Clean Sheets Tally
+                        // Clean Sheets 
                         if (!isNaN(hScore) && !isNaN(aScore)) {
                             if (hScore === 0 && teamCleanSheets[awayCode] !== undefined) teamCleanSheets[awayCode]++;
                             if (aScore === 0 && teamCleanSheets[homeCode] !== undefined) teamCleanSheets[homeCode]++;
                         }
 
-                        // Goals Tally (Cols 9 and 10 repeat for each goal event)
+                        // Goals Tally
                         for(let g=0; g<6; g++) {
                             let minCol = 9 + (g*2);
                             let idCol = 10 + (g*2);
                             if(row[minCol] && row[idCol]) {
-                                let pIdRaw = row[idCol].trim();
+                                let pIdRaw = String(row[idCol]).trim();
                                 let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
                                 if(pId) {
-                                    // We don't explicitly know which team scored based solely on the event ID,
-                                    // but we can check both teams' rosters for that ID.
                                     if (playerMap[`${homeCode}_${pId}`]) {
                                         playerMap[`${homeCode}_${pId}`].goals++;
                                     } else if (playerMap[`${awayCode}_${pId}`]) {
@@ -589,14 +516,11 @@ It fetches the data dynamically and calculates the following awards based on you
                     }
                 }
 
-                // Assign Clean Sheets to GKs
+                // 4. Assign Clean Sheets & Map Lists
                 players.forEach(p => {
-                    if (p.pos === 'GK') {
-                        p.cleanSheets = teamCleanSheets[p.teamCode] || 0;
-                    }
+                    if (p.pos === 'GK') p.cleanSheets = teamCleanSheets[p.teamCode] || 0;
                 });
 
-                // Map data structures for awards sorting
                 const formatAwardPlayer = (p, statVal) => ({
                     name: p.name, teamName: p.teamName, teamHex: p.teamHex, stat: statVal
                 });
@@ -621,10 +545,9 @@ It fetches the data dynamically and calculates the following awards based on you
                     .sort((a, b) => b.def - a.def || a.name.localeCompare(b.name))
                     .map(p => formatAwardPlayer(p, p.def));
 
-                // Generate HTML Output
+                // 5. Mount UI
                 const mount = document.getElementById('awards-mount');
                 mount.innerHTML = '';
-
                 let htmlContent = '';
                 
                 if (goldenBootList.length > 0) {
@@ -650,12 +573,14 @@ It fetches the data dynamically and calculates the following awards based on you
                 mount.innerHTML = htmlContent;
 
             } catch (err) {
+                // Ensure the error state is centered and styled appropriately
                 document.getElementById('awards-mount').innerHTML = `
-                    <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #f87171; border: 1px dashed rgba(248, 113, 113, 0.3); border-radius: 20px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(15, 17, 21, 0.5)); backdrop-filter: blur(8px);">
-                        <h3 style="margin-top:0;">Awards Information Unavailable</h3>
-                        <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted);">${err.message}</p>
+                    <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #fca5a5; border: 1px dashed rgba(248, 113, 113, 0.2); border-radius: 20px; background: rgba(239, 68, 68, 0.05); max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; opacity: 0.8;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <h3 style="margin-top:0; font-size: 1.2rem; font-weight: 800;">Awards Information Unavailable</h3>
+                        <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">${err.message}</p>
                     </div>`;
-                console.error(err);
+                console.error("Award Generation Error:", err);
             }
         }
 
