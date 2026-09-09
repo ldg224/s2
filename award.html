@@ -35,9 +35,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
+        *, *::before, *::after { box-sizing: border-box; }
 
         .grid-bg {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
@@ -54,7 +52,7 @@
         }
 
         .app-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 40px 20px calc(40px + env(safe-area-inset-bottom));
             display: flex;
@@ -134,7 +132,7 @@
 
         .awards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
             gap: 24px;
         }
 
@@ -143,7 +141,7 @@
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 28px;
-            padding: 30px;
+            padding: 26px;
             box-shadow: 0 26px 55px rgba(0, 0, 0, 0.25);
             animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
             position: relative;
@@ -182,20 +180,20 @@
         }
 
         .award-icon-wrapper {
-            width: 80px; height: 80px;
+            width: 72px; height: 72px;
             background: rgba(0,0,0,0.4);
             border: 2px solid rgba(251, 191, 36, 0.3);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.2rem;
-            margin-bottom: 20px;
+            font-size: 2rem;
+            margin-bottom: 16px;
             position: relative;
             z-index: 2;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(251, 191, 36, 0.2);
         }
 
         .award-title {
-            font-size: 1.3rem; font-weight: 900; letter-spacing: -0.5px;
+            font-size: 1.25rem; font-weight: 900; letter-spacing: -0.5px;
             margin: 0 0 4px 0; position: relative; z-index: 2;
             background: var(--award-gold);
             -webkit-background-clip: text;
@@ -203,41 +201,41 @@
         }
         
         .award-subtitle {
-            font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
+            font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
             text-transform: uppercase; letter-spacing: 1px;
-            margin: 0 0 24px 0; position: relative; z-index: 2;
+            margin: 0 0 20px 0; position: relative; z-index: 2;
         }
 
         .winner-block {
             background: rgba(255,255,255,0.03);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 20px;
+            padding: 18px;
             width: 100%;
             position: relative;
             z-index: 2;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .winner-stat-badge {
             background: rgba(0,0,0,0.6);
             border: 1px solid rgba(255,255,255,0.1);
-            color: #fff; font-size: 1.1rem; font-weight: 900;
-            padding: 8px 16px; border-radius: 12px;
+            color: #fff; font-size: 1rem; font-weight: 900;
+            padding: 6px 14px; border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .winner-name {
-            font-size: 1.6rem; font-weight: 900; letter-spacing: -0.5px;
+            font-size: 1.45rem; font-weight: 900; letter-spacing: -0.5px;
             margin: 0;
         }
 
         .winner-team {
             display: flex; align-items: center; gap: 8px;
-            font-size: 0.9rem; font-weight: 700; color: var(--text-muted);
+            font-size: 0.85rem; font-weight: 700; color: var(--text-muted);
         }
         
         .team-dot {
@@ -245,17 +243,17 @@
         }
 
         .runner-up-list {
-            margin-top: 16px; width: 100%; position: relative; z-index: 2;
+            margin-top: 14px; width: 100%; position: relative; z-index: 2;
         }
         
         .runner-up-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 16px;
+            padding: 8px 14px;
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.04);
             border-radius: 12px;
-            font-size: 0.85rem;
-            margin-bottom: 8px;
+            font-size: 0.82rem;
+            margin-bottom: 6px;
         }
         .runner-up-row:last-child { margin-bottom: 0; }
         
@@ -272,7 +270,6 @@
     <div class="grid-bg"></div>
 
     <div class="app-container">
-        
         <nav>
             <a href="index.html" class="back-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -303,9 +300,7 @@
 
         async function fetchCSV(url) {
             const res = await fetch(url);
-            if (!res.ok) {
-                throw new Error(`Failed to load data. The server returned a ${res.status} error. Please check if the spreadsheet link is active and published.`);
-            }
+            if (!res.ok) throw new Error(`Failed to load data (HTTP ${res.status}). Verify spreadsheet link.`);
             const text = await res.text();
             
             return text.split(/\r\n|\n/).map(line => {
@@ -323,12 +318,10 @@
 
         function parseMatchDateTime(dateStr, timeStr) {
             if (!dateStr || dateStr.trim().toLowerCase() === 'tba') return null;
-
             const dateParts = dateStr.trim().match(/\d+/g);
             if (!dateParts || dateParts.length < 2) return null;
 
             let day, month, year = new Date().getFullYear();
-
             if (dateParts[0].length === 4) {
                 year = parseInt(dateParts[0], 10);
                 month = parseInt(dateParts[1], 10) - 1;
@@ -336,9 +329,7 @@
             } else {
                 day = parseInt(dateParts[0], 10);
                 month = parseInt(dateParts[1], 10) - 1;
-                if (dateParts.length >= 3 && dateParts[2].length === 4) {
-                    year = parseInt(dateParts[2], 10);
-                }
+                if (dateParts.length >= 3 && dateParts[2].length === 4) year = parseInt(dateParts[2], 10);
             }
 
             let hours = 0, minutes = 0;
@@ -347,9 +338,7 @@
                 if (timeParts && timeParts.length >= 1) {
                     hours = parseInt(timeParts[0], 10);
                     if (hours === 24) hours = 0;
-                    if (timeParts.length >= 2) {
-                        minutes = parseInt(timeParts[1], 10);
-                    }
+                    if (timeParts.length >= 2) minutes = parseInt(timeParts[1], 10);
                 }
             }
 
@@ -403,14 +392,14 @@
                     fetchCSV(CSV_SCHEDULE), fetchCSV(CSV_ROSTERS), fetchCSV(CSV_TEAMS)
                 ]);
 
-                // 1. Rigorous Data Mapping for Teams
+                // Map Teams & Initialize Standings Data
                 let teamsMap = {};
+                let teamStandings = {};
+
                 teamsRaw.forEach((row, i) => {
                     if (i === 0 || !row || row.length < 2) return;
-                    
                     let teamName = (row[0] || '').trim();
                     let teamCode = (row[1] || '').trim().toUpperCase();
-                    
                     if (!teamCode) return;
                     
                     teamsMap[teamCode] = {
@@ -418,12 +407,23 @@
                         code: teamCode,
                         hex: (row[3] || '').trim() || '#475569',
                     };
+
+                    teamStandings[teamCode] = {
+                        code: teamCode,
+                        name: teamName,
+                        hex: teamsMap[teamCode].hex,
+                        points: 0,
+                        wins: 0,
+                        goalsScored: 0,
+                        goalsConceded: 0,
+                        cleanSheets: 0
+                    };
                 });
 
                 let players = [];
                 let playerMap = {}; 
 
-                // 2. Rigorous Data Mapping for Rosters
+                // Map Rosters
                 rosterRaw.forEach((row, i) => {
                     if (i === 0 || !row || row.length < 2) return;
                     
@@ -467,10 +467,7 @@
                     playerMap[`${teamCode}_${slicedNum}`] = pObj;
                 });
 
-                // 3. Tally Match Stats Securely 
-                let teamCleanSheets = {}; 
-                Object.keys(teamsMap).forEach(k => teamCleanSheets[k] = 0);
-
+                // Calculate Match Outcomes & Player Goals
                 for (let i = 1; i < scheduleRaw.length; i++) {
                     const row = scheduleRaw[i];
                     if (!row || row.length < 7) continue;
@@ -491,13 +488,32 @@
                         const hScore = parseInt(row[5]);
                         const aScore = parseInt(row[7]);
 
-                        // Clean Sheets 
                         if (!isNaN(hScore) && !isNaN(aScore)) {
-                            if (hScore === 0 && teamCleanSheets[awayCode] !== undefined) teamCleanSheets[awayCode]++;
-                            if (aScore === 0 && teamCleanSheets[homeCode] !== undefined) teamCleanSheets[homeCode]++;
+                            if (teamStandings[homeCode]) {
+                                teamStandings[homeCode].goalsScored += hScore;
+                                teamStandings[homeCode].goalsConceded += aScore;
+                                if (aScore === 0) teamStandings[homeCode].cleanSheets++;
+                            }
+                            if (teamStandings[awayCode]) {
+                                teamStandings[awayCode].goalsScored += aScore;
+                                teamStandings[awayCode].goalsConceded += hScore;
+                                if (hScore === 0) teamStandings[awayCode].cleanSheets++;
+                            }
+
+                            // Match Results & Standings Points
+                            if (hScore > aScore && teamStandings[homeCode]) {
+                                teamStandings[homeCode].points += 3;
+                                teamStandings[homeCode].wins++;
+                            } else if (aScore > hScore && teamStandings[awayCode]) {
+                                teamStandings[awayCode].points += 3;
+                                teamStandings[awayCode].wins++;
+                            } else {
+                                if (teamStandings[homeCode]) teamStandings[homeCode].points += 1;
+                                if (teamStandings[awayCode]) teamStandings[awayCode].points += 1;
+                            }
                         }
 
-                        // Goals Tally
+                        // Player Goal Allocation
                         for(let g=0; g<6; g++) {
                             let minCol = 9 + (g*2);
                             let idCol = 10 + (g*2);
@@ -505,78 +521,102 @@
                                 let pIdRaw = String(row[idCol]).trim();
                                 let pId = pIdRaw.length > 2 ? pIdRaw.slice(-2) : pIdRaw;
                                 if(pId) {
-                                    if (playerMap[`${homeCode}_${pId}`]) {
-                                        playerMap[`${homeCode}_${pId}`].goals++;
-                                    } else if (playerMap[`${awayCode}_${pId}`]) {
-                                        playerMap[`${awayCode}_${pId}`].goals++;
-                                    }
+                                    if (playerMap[`${homeCode}_${pId}`]) playerMap[`${homeCode}_${pId}`].goals++;
+                                    else if (playerMap[`${awayCode}_${pId}`]) playerMap[`${awayCode}_${pId}`].goals++;
                                 }
                             }
                         }
                     }
                 }
 
-                // 4. Assign Clean Sheets & Map Lists
+                // Map GK Clean Sheets
                 players.forEach(p => {
-                    if (p.pos === 'GK') p.cleanSheets = teamCleanSheets[p.teamCode] || 0;
+                    if (p.pos === 'GK' && teamStandings[p.teamCode]) {
+                        p.cleanSheets = teamStandings[p.teamCode].cleanSheets;
+                    }
                 });
 
                 const formatAwardPlayer = (p, statVal) => ({
                     name: p.name, teamName: p.teamName, teamHex: p.teamHex, stat: statVal
                 });
 
+                // --- Award Rankings ---
+                
+                // 1. Golden Boot
                 const goldenBootList = players
                     .filter(p => p.goals > 0)
                     .sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name))
                     .map(p => formatAwardPlayer(p, p.goals));
 
+                // 2. Golden Glove
                 const goldenGloveList = players
                     .filter(p => p.pos === 'GK')
                     .sort((a, b) => b.cleanSheets - a.cleanSheets || a.name.localeCompare(b.name))
                     .map(p => formatAwardPlayer(p, p.cleanSheets));
-                
-                const bestAttackerList = players
-                    .filter(p => p.pos === 'FWD' || p.pos === 'MID')
-                    .sort((a, b) => b.off - a.off || a.name.localeCompare(b.name))
-                    .map(p => formatAwardPlayer(p, p.off));
-                    
+
+                // 3. League MVP (Overall Rating + Goal Impact)
+                const mvpList = players
+                    .map(p => ({ ...p, mvpScore: p.totalScore + (p.goals * 2) }))
+                    .sort((a, b) => b.mvpScore - a.mvpScore || a.name.localeCompare(b.name))
+                    .map(p => formatAwardPlayer(p, p.mvpScore));
+
+                // 4. Best Manager (Highest Points & Wins)
+                const bestManagerList = Object.values(teamStandings)
+                    .sort((a, b) => b.points - a.points || b.wins - a.wins || (b.goalsScored - b.goalsConceded) - (a.goalsScored - a.goalsConceded))
+                    .map(t => ({
+                        name: `Manager (${t.name})`,
+                        teamName: t.name,
+                        teamHex: t.hex,
+                        stat: `${t.points} Pts`
+                    }));
+
+                // 5. Midfield Maestro (Top Midfielder OVR)
+                const midfieldList = players
+                    .filter(p => p.pos === 'MID')
+                    .sort((a, b) => b.totalScore - a.totalScore || a.name.localeCompare(b.name))
+                    .map(p => formatAwardPlayer(p, p.totalScore));
+
+                // 6. Breakthrough Goalscorer (Top Goals by Non-Forward)
+                const breakthroughList = players
+                    .filter(p => (p.pos === 'MID' || p.pos === 'DEF') && p.goals > 0)
+                    .sort((a, b) => b.goals - a.goals || b.totalScore - a.totalScore)
+                    .map(p => formatAwardPlayer(p, p.goals));
+
+                // 7. Golden Club (Top Scoring Team)
+                const topScoringTeamList = Object.values(teamStandings)
+                    .sort((a, b) => b.goalsScored - a.goalsScored)
+                    .map(t => ({
+                        name: t.name,
+                        teamName: 'Club Award',
+                        teamHex: t.hex,
+                        stat: t.goalsScored
+                    }));
+
+                // 8. Defensive Anchor
                 const bestDefenderList = players
                     .filter(p => p.pos === 'DEF' || p.pos === 'GK')
                     .sort((a, b) => b.def - a.def || a.name.localeCompare(b.name))
                     .map(p => formatAwardPlayer(p, p.def));
 
-                // 5. Mount UI
+                // --- UI Rendering ---
                 const mount = document.getElementById('awards-mount');
                 mount.innerHTML = '';
-                let htmlContent = '';
+                let html = '';
                 
-                if (goldenBootList.length > 0) {
-                    htmlContent += createAwardCard('⚽', 'Golden Boot', 'Top Goalscorer', goldenBootList, 'Goals');
-                } else {
-                    htmlContent += createAwardCard('⚽', 'Golden Boot', 'Top Goalscorer', [{name: 'TBD', teamName: 'Matches Pending', stat: 0}], 'Goals');
-                }
+                html += createAwardCard('🏆', 'League MVP', 'Overall Performance Leader', mvpList, 'Pts');
+                html += createAwardCard('👔', 'Best Manager', 'Highest Match Points', bestManagerList, 'Total');
+                html += createAwardCard('⚽', 'Golden Boot', 'Top Goalscorer', goldenBootList.length ? goldenBootList : [{name: 'TBD', teamName: 'Pending Matches', stat: 0}], 'Goals');
+                html += createAwardCard('🧤', 'Golden Glove', 'Most Clean Sheets', goldenGloveList.length ? goldenGloveList : [{name: 'TBD', teamName: 'Pending Matches', stat: 0}], 'CS');
+                html += createAwardCard('🪄', 'Midfield Maestro', 'Top Midfielder Rating', midfieldList, 'OVR');
+                html += createAwardCard('🚀', 'Breakthrough Star', 'Top Non-Forward Goalscorer', breakthroughList.length ? breakthroughList : [{name: 'None', teamName: 'No Mid/Def Goals Yet', stat: 0}], 'Goals');
+                html += createAwardCard('🔥', 'Golden Club', 'Most Team Goals Scored', topScoringTeamList, 'Goals');
+                html += createAwardCard('🛡️', 'Defensive Anchor', 'Highest Defence Rating', bestDefenderList, 'OVR');
 
-                if (goldenGloveList.length > 0) {
-                    htmlContent += createAwardCard('🧤', 'Golden Glove', 'Most Clean Sheets', goldenGloveList, 'CS');
-                } else {
-                    htmlContent += createAwardCard('🧤', 'Golden Glove', 'Most Clean Sheets', [{name: 'TBD', teamName: 'Matches Pending', stat: 0}], 'CS');
-                }
-
-                if (bestAttackerList.length > 0) {
-                    htmlContent += createAwardCard('⚡', 'Offensive MVP', 'Highest Attack Rating', bestAttackerList, 'OVR');
-                }
-
-                if (bestDefenderList.length > 0) {
-                    htmlContent += createAwardCard('🛡️', 'Defensive Anchor', 'Highest Defence Rating', bestDefenderList, 'OVR');
-                }
-
-                mount.innerHTML = htmlContent;
+                mount.innerHTML = html;
 
             } catch (err) {
-                // Ensure the error state is centered and styled appropriately
                 document.getElementById('awards-mount').innerHTML = `
-                    <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #fca5a5; border: 1px dashed rgba(248, 113, 113, 0.2); border-radius: 20px; background: rgba(239, 68, 68, 0.05); max-width: 600px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; opacity: 0.8;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: #fca5a5; border: 1px dashed rgba(248, 113, 113, 0.2); border-radius: 20px; background: rgba(239, 68, 68, 0.05); max-width: 600px; margin: 0 auto;">
                         <h3 style="margin-top:0; font-size: 1.2rem; font-weight: 800;">Awards Information Unavailable</h3>
                         <p style="margin-bottom:0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">${err.message}</p>
                     </div>`;
