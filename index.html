@@ -364,6 +364,96 @@
         .countdown-banner { font-size: 0.75rem; font-weight: 700; color: var(--status-upcoming); background: rgba(6, 55, 217, 0.1); padding: 6px 14px; border-radius: 6px; }
         .loading-text { text-align: center; padding: 40px; font-weight: 600; color: var(--text-muted); font-size: 1rem; }
 
+        /* === AWARDS BANNER STYLING === */
+        .awards-banner-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(15, 23, 42, 0.85) 100%);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 26px;
+            padding: 20px 26px;
+            text-decoration: none;
+            color: var(--text-main);
+            box-shadow: 0 12px 32px rgba(0, 191, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .awards-banner-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(56, 189, 248, 0.75);
+            box-shadow: 0 16px 40px rgba(0, 191, 255, 0.2), 0 0 20px rgba(56, 189, 248, 0.25);
+        }
+
+        .awards-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .awards-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #38bdf8;
+            background: rgba(14, 165, 233, 0.18);
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            padding: 6px 14px;
+            border-radius: 999px;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .neon-pulse-blue {
+            width: 7px;
+            height: 7px;
+            background-color: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #38bdf8, 0 0 18px #38bdf8;
+            animation: livePulse 1.8s infinite ease-in-out;
+        }
+
+        .awards-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .awards-title {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-main);
+        }
+
+        .awards-sub {
+            margin: 0;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .awards-arrow {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #38bdf8;
+            transition: transform 0.3s ease;
+            padding-left: 12px;
+        }
+
+        .awards-banner-card:hover .awards-arrow {
+            transform: translateX(6px);
+        }
+
         @media (max-width: 600px) {
             .app-container { padding: 24px 16px; }
             header { padding: 20px; flex-direction: column; align-items: flex-start; gap: 16px; }
@@ -381,6 +471,10 @@
             .team-side, .team-side.away-side { flex-direction: row; text-align: left; justify-content: flex-start; gap: 12px; }
             .center-score-vs { flex-direction: row; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--glass-border); border-bottom: 1px dashed var(--glass-border); width: 100%; }
             .btn-replay { width: 100%; text-align: center; padding: 10px 14px; }
+
+            .awards-banner-card { padding: 16px 18px; border-radius: 20px; }
+            .awards-title { font-size: 1rem; }
+            .awards-sub { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -402,6 +496,22 @@
                  <img class="header-logo" src="league_files/Season 2 Logo (PRIMARY).png" onerror="this.style.display='none';">
             </div>
         </header>
+
+        <!-- AWARDS RACE BANNER CARD -->
+        <a href="award.html" class="awards-banner-card" aria-label="View Awards Race">
+            <div class="awards-banner-content">
+                <div class="awards-badge">
+                    <span class="neon-pulse-blue"></span> (NEW)
+                </div>
+                <div class="awards-info">
+                    <h2 class="awards-title">View Awards Race</h2>
+                    <p class="awards-sub">Track Golden Boot, Assist Leaders, and Award Contenders</p>
+                </div>
+            </div>
+            <div class="awards-arrow">
+                &rarr;
+            </div>
+        </a>
 
         <div class="dashboard-tier">
             <div class="dash-widget" id="mini-standings-mount">
