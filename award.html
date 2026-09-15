@@ -327,9 +327,12 @@
             if (runnersUp.length > 0) {
                 runnersUpHtml = `<div class="runner-up-list">` + runnersUp.map(p => `
                     <div class="runner-up-row">
-                        <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
                             <div class="team-dot" style="background: ${p.teamHex || '#fff'}; box-shadow: 0 0 6px ${p.teamHex || '#fff'}; flex-shrink: 0;"></div>
-                            <span class="runner-up-name">${p.name}</span>
+                            <div style="display:flex; flex-direction:column; gap:2px; text-align: left;">
+                                <span class="runner-up-name" style="line-height: 1;">${p.name}</span>
+                                <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">${p.teamName}</span>
+                            </div>
                         </div>
                         <span class="runner-up-stat">${p.stat} ${statLabel}</span>
                     </div>
