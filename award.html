@@ -410,6 +410,34 @@
                     
                     let status = (row[3] || '').trim().toUpperCase();
                     if (!status.includes("FINALISED")) return; // Only process finished matches
+
+                    // --- NEW: Time & Date Verification Layer ---
+                    let dateStr = (row[1] || '').trim();
+                    let timeStr = (row[2] || '').trim();
+                    
+                    if (dateStr && timeStr) {
+                        let dateParts = dateStr.split('/');
+                        let timeParts = timeStr.split(':');
+                        
+                        // Proceed only if we have at least DD/MM/YYYY and HH:MM
+                        if (dateParts.length >= 3 && timeParts.length >= 2) {
+                            let day = parseInt(dateParts[0], 10);
+                            let month = parseInt(dateParts[1], 10) - 1; // JavaScript months are 0-11
+                            let year = parseInt(dateParts[2], 10);
+                            
+                            let hour = parseInt(timeParts[0], 10);
+                            let minute = parseInt(timeParts[1], 10);
+                            let second = timeParts[2] ? parseInt(timeParts[2], 10) : 0;
+                            
+                            let matchDate = new Date(year, month, day, hour, minute, second);
+                            let now = new Date();
+                            
+                            // If the match date is strictly in the future compared to right now, skip it.
+                            if (matchDate > now) {
+                                return;
+                            }
+                        }
+                    }
                     
                     let hName = row[4].trim().toUpperCase();
                     let aName = row[6].trim().toUpperCase();
